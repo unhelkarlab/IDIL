@@ -1,5 +1,8 @@
 # IDIL
 
+> [!WARNING]  
+> This code is not yet officially released, and it is still undergoing cleanup. Once the final version is uploaded, this warning will be removed.
+
 ## Installation
 We recommend you use `conda` environment with python 3.8. 
 ```conda create -n idil python=3.8```
