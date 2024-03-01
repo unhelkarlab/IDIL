@@ -1,0 +1,39 @@
+# @package _global_
+
+alg_name: idil
+demo_latent_infer_interval: 1000 
+# tx
+miql_tx_activation: relu
+miql_tx_hidden_critic: [256, 256]
+miql_tx_optimizer_lr_critic: 3.e-4
+miql_tx_method_loss: value
+miql_tx_method_regularize: False
+miql_tx_method_div: chi
+miql_tx_init_temp: 1e-4
+miql_tx_clip_grad_val: null
+miql_tx_num_actor_update: 1
+miql_tx_num_critic_update: 1
+miql_tx_tx_batch_size: 64
+# pi
+miql_pi_activation: relu
+# pi - Q-network
+miql_pi_hidden_critic: [256, 256]
+miql_pi_optimizer_lr_critic: 3.e-4
+miql_pi_method_loss: value
+miql_pi_method_regularize: True
+miql_pi_method_div: ""
+miql_pi_num_critic_update: 1
+miql_pi_single_critic: True
+# pi - actor
+miql_pi_hidden_policy: [256, 256]
+miql_pi_optimizer_lr_policy: 3.e-4
+miql_pi_log_std_bounds: [-5., 2.]
+miql_pi_num_actor_update: 1
+miql_pi_clip_grad_val: null
+miql_pi_bounded_actor: True
+miql_pi_use_nn_logstd: True
+miql_pi_clamp_action_logstd: False # True: use clamp() / False: use tanh
+# pi - alpha
+miql_pi_optimizer_lr_alpha: 3.e-4
+miql_pi_init_temp: 1e-2
+miql_pi_learn_temp: True

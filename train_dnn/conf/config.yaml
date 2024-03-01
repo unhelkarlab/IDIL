@@ -1,0 +1,27 @@
+seed: 0
+device: cuda:0
+n_thread: 1
+base_dir: ""
+pretrain_path: ""
+tag: default
+env_type: mujoco
+dim_c: 4
+n_traj: 1
+supervision: 0.0
+
+gamma: 0.99
+mini_batch_size: 256
+n_sample: 50000 # replay buffer size
+init_sample: 1000 # only for streaming style training
+update_interval: 5 # only for streaming style training
+max_explore_step: 5e4 
+
+log_interval: 1000
+eval_interval: 20000
+
+defaults:
+  - _self_
+  - alg: iql
+  - env: CleanupSingle-v0
+  - optional base: "" # just to save a special_setting name to enable OmegaConf interpolation
+  - optional special_setting: ${alg}/${base} # actual yaml path for a special setting

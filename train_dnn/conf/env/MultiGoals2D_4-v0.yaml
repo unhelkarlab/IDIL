@@ -1,0 +1,8 @@
+# @package _global_
+
+defaults:
+  - MultiGoals_common
+
+env_name: MultiGoals2D_4-v0
+data_path: experts/MultiGoals2D_4-v0_500.pkl
+dim_c: 4
