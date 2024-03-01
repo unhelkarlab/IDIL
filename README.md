@@ -1,5 +1,15 @@
 # IDIL
 
+## Installation
+We recommend you use `conda` environment with python 3.8. 
+```conda create -n idil python=3.8```
+Then, please install with the following command:
+```pip install -e .```
+
+
+## Execution
+You can run IDIL with the following command:
+```bash train_dnn/scripts/idil_run.sh```
 
 ## Development
 
