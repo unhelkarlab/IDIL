@@ -1,7 +1,0 @@
-# @package _global_
-
-defaults:
-  - mujoco_common
-
-env_name: Walker2d-v2
-data_path: experts/Walker2d-v2_25.pkl

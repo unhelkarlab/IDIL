@@ -1,21 +1,25 @@
-# IDIL
+# Intent-Driven Imitation Learning
+This repository contains an implementation of IDIL proposed in `IDIL: Imitation Learning of Intent-Driven Expert Behavior`, AAMAS 2024.
 
 ## Installation
 We recommend you use `conda` environment with python 3.8. 
-```conda create -n idil python=3.8```
+```
+conda create -n idil python=3.8
+```
 Then, please install with the following command:
-```pip install -e .```
+```
+pip install -e .
+```
 
+## IDIL Training
+Please refer to the `readme.md` file in the `idil_train/` folder.
 
-## Execution
-You can run IDIL with the following command:
-```bash train_dnn/scripts/idil_run.sh```
-
-## Development
-
-### Style Guide
-This project uses a custom Python style guide, which differs from [PEP 8](https://www.python.org/dev/peps/pep-0008/) in the following ways:
-- Use two-space indentation instead of four-space indentation.
-- 80 character line limits rather than 79.
-
-You can format your code according to the style guide using linters (e.g., [flake8](https://pypi.org/project/flake8/)) and autoformatters (e.g., [yapf](https://github.com/google/yapf)).
+## Citation
+```
+@inproceedings{seo2024idil,
+  title={IDIL: Imitation Learning of Intent-Driven Expert Behavior},
+  author={Seo, Sangwon and Unhelkar, Vaibhav},
+  booktitle={International Conference on Autonomous Agents and Multi-Agent Systems (AAMAS). IFAAMAS},
+  year={2024}
+}
+```

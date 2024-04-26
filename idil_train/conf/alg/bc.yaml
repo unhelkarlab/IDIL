@@ -1,0 +1,15 @@
+# @package _global_
+
+alg_name: sb3bc
+# Q-network
+hidden_critic: [256, 256]
+# policy
+hidden_policy: [256, 256]
+optimizer_lr_policy: 1.e-3
+
+log_interval: 1000
+eval_interval: 20000
+
+mini_batch_size: 256
+n_batches: 10000
+seed: 2

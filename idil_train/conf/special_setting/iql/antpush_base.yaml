@@ -1,0 +1,6 @@
+# @package _global_
+
+defaults:
+  - iql/mujoco_base
+
+n_traj: 253

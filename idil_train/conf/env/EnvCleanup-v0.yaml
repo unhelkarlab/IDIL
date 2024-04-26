@@ -1,0 +1,10 @@
+# @package _global_
+
+defaults:
+  - boxpush_common
+
+env_name: EnvCleanup-v0
+data_path: experts/EnvCleanup_v0_66.pkl
+
+n_traj: 66
+dim_c: 5

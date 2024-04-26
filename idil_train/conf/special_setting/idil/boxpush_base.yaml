@@ -1,0 +1,8 @@
+# @package _global_
+
+defaults:
+  - idil/MultiGoals2D_base
+
+miql_pi_method_div: chi
+miql_pi_method_loss: value
+miql_pi_method_regularize: False

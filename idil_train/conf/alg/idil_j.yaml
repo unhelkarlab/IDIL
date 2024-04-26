@@ -1,0 +1,34 @@
+# @package _global_
+
+alg_name: idil_j
+clip_grad_val: null
+gumbel_temperature: 1.0
+separate_policy_update: False
+demo_latent_infer_interval: 1000
+# Q-net
+hidden_critic: [256, 256]
+optimizer_lr_critic: 3.e-4
+method_loss: v0
+method_regularize: True
+method_div: ""
+num_critic_update: 1
+iql_single_critic: True
+# policy
+hidden_policy: [256, 256]
+optimizer_lr_policy: 3.e-5
+bounded_actor: True
+use_nn_logstd: True
+clamp_action_logstd: False # True: use clamp() / False: use tanh
+log_std_bounds: [-5., 2.]
+num_actor_update: 1
+# option
+hidden_option: [256, 256]
+optimizer_lr_option: 3.e-5
+use_prev_action: False
+extra_action_dim: True # use extra dim to represent initial value
+extra_option_dim: True # use extra dim to represent initial value
+thinker_clip_grad_val: null
+# alpha
+optimizer_lr_alpha: 3.e-4
+init_temp: 1e-2
+learn_temp: False

@@ -1,0 +1,7 @@
+# @package _global_
+
+defaults:
+  - mujoco_common
+
+env_name: Ant-v2
+data_path: experts/Ant-v2_25.pkl
