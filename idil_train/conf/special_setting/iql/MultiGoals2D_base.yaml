@@ -1,0 +1,15 @@
+# @package _global_
+
+n_sample: 50000
+init_sample: 1000
+update_interval: 5
+mini_batch_size: 256
+
+iql_agent_name: sac
+
+hidden_critic: [256, 256]
+hidden_policy: [256, 256]
+optimizer_lr_policy: 1.e-4
+init_temp: 1e-2
+learn_temp: False
+method_loss: value

@@ -1,9 +1,0 @@
-# @package _global_
-
-defaults:
-  - idil/mujoco_base
-
-max_explore_step: 1.5e6
-n_traj: 1
-miql_pi_init_temp: 0.01
-miql_pi_method_loss: v0

@@ -1,5 +1,0 @@
-# @package _global_
-
-max_explore_step: 1e6
-env_type: mujoco
-dim_c: 4

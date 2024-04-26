@@ -1,6 +1,0 @@
-# @package _global_
-
-defaults:
-  - ogail/mujoco_base
-
-n_traj: 1

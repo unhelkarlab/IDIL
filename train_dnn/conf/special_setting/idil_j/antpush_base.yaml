@@ -1,6 +1,0 @@
-# @package _global_
-
-defaults:
-  - idil_j/mujoco_base
-
-n_traj: 253

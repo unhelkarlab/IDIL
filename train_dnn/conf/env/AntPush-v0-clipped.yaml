@@ -1,7 +1,0 @@
-# @package _global_
-
-defaults:
-  - mujoco_common
-
-env_name: AntPush-v0
-data_path: experts/AntPush-v0_400_clipped.pkl

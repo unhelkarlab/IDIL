@@ -1,0 +1,7 @@
+# @package _global_
+
+defaults:
+  - mujoco_common
+
+env_name: Humanoid-v2
+data_path: experts/Humanoid-v2_25.pkl

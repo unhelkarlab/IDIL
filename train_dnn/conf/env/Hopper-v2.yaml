@@ -1,7 +1,0 @@
-# @package _global_
-
-defaults:
-  - mujoco_common
-
-env_name: Hopper-v2
-data_path: experts/Hopper-v2_25.pkl

@@ -1,8 +1,0 @@
-# @package _global_
-
-defaults:
-  - iql/MultiGoals2D_base
-
-iql_agent_name: softq
-method_div: chi
-method_regularize: False

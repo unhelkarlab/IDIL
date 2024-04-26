@@ -1,0 +1,28 @@
+# @package _global_
+
+max_explore_step: 3e6
+n_traj: 5
+
+n_sample: 50000
+init_sample: 1000
+update_interval: 5
+mini_batch_size: 256
+demo_latent_infer_interval: 1000
+# tx
+miql_tx_hidden_critic: [128, 128]
+miql_tx_optimizer_lr_critic: 3.e-4
+miql_tx_method_loss: value
+miql_tx_method_regularize: False
+miql_tx_method_div: chi
+miql_tx_init_temp: 0.001
+miql_tx_tx_batch_size: 256
+# pi
+miql_pi_hidden_critic: [128, 128]
+miql_pi_optimizer_lr_critic: 3.e-4
+miql_pi_method_loss: value
+miql_pi_method_regularize: True
+miql_pi_single_critic: True
+miql_pi_hidden_policy: [128, 128]
+miql_pi_optimizer_lr_policy: 3.e-5
+miql_pi_init_temp: 1e-2
+miql_pi_learn_temp: False
