@@ -1,0 +1,5 @@
+idil_train/btil_data/
+idil_train/experts/
+idil_train/test_data/
+.env
+

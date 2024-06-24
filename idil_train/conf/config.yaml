@@ -1,5 +1,5 @@
 seed: 0
-device: cuda:0
+device: cpu
 n_thread: 1
 base_dir: ""
 pretrain_path: ""
