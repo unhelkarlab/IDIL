@@ -3,3 +3,8 @@ idil_train/experts/
 idil_train/test_data/
 .env
 
+
+outputs/
+wandb/
+idil_train/result/
+gym_monitor.csv

@@ -93,9 +93,9 @@ def train(config: omegaconf.DictConfig,
                                                  throw_on_missing=True)
 
   run_name = f"{config.alg_name}_{config.tag}"
-  wandb.init(project=env_name,
+  wandb.init(project=f"{os.environ.get("WANDB_PROJECT")}-{env_name}",
              name=run_name,
-             entity='entity-name',
+             entity=os.environ.get("WANDB_ENTITY"),
              sync_tensorboard=True,
              reinit=True,
              config=dict_config)
@@ -129,7 +129,9 @@ def train(config: omegaconf.DictConfig,
   eps_window = int(eps_window)
   max_explore_step = int(max_explore_step)
 
-  agent = make_miql_agent(config, env)
+  # NOTE: the agent's pi_agent is never publicly accessed
+  # so I shouldn't have to change anythin in the train.py
+  agent = make_miql_agent(config, env) 
 
   # Load expert data
   n_labeled = int(num_trajs * config.supervision)
@@ -179,6 +181,8 @@ def train(config: omegaconf.DictConfig,
 
     for episode_step in count():
       with eval_mode(agent):
+        # NOTE: sampling action from policy, use action to infer next state and then latent
+        # this action will be added to the replay buffer
         action = agent.choose_policy_action(state, latent, sample=True)
 
         next_state, reward, done, info = env.step(action)
@@ -212,15 +216,6 @@ def train(config: omegaconf.DictConfig,
                alg_type,
                output_dir=output_dir,
                suffix=output_suffix + "_best")
-        # else:
-        #   # for temporary use
-        #   save(agent,
-        #        epoch,
-        #        1,
-        #        env_name,
-        #        alg_type,
-        #        output_dir=output_dir,
-        #        suffix=output_suffix + f"_{epoch}")
 
       # only store done true when episode finishes without hitting timelimit
       done_no_lim = done
@@ -267,6 +262,8 @@ def train(config: omegaconf.DictConfig,
         if explore_steps % config.update_interval == 0:
           policy_batch = online_memory_replay.get_samples(
               batch_size, agent.device)
+          
+          # NOTE: expert batch is the expert distribution
           expert_batch = get_samples(batch_size, expert_data)
 
           tx_losses, pi_losses = agent.miql_update(

@@ -55,6 +55,17 @@ class MentalIQL:
                                    discrete_obs, SimpleOptionQNetwork,
                                    self._get_tx_iq_vars)
 
+
+    # NOTE: this entire block defines the action policy model initialization
+    # note that I have to use a SAC model for continuous environments
+    # NOTE: this pi agent represents the learned action policy
+    # To use the expert action policy, I'll have to replace this
+    # intialization with the expert action policy.
+    # TODO: replace the pi_agent initialization with a fixed expert, main
+    # functionalities to handle:
+    # - choose_policy_action
+    # - pi_agent acceessed attributes (i.e. log_probs)
+    # - remove update functions
     if discrete_act:
       self.pi_agent = IQLOptionSoftQ(config_pi, obs_dim, action_dim, lat_dim,
                                      discrete_obs, SimpleOptionQNetwork,
@@ -78,7 +89,8 @@ class MentalIQL:
   def train(self, training=True):
     self.training = training
     self.tx_agent.train(training)
-    self.pi_agent.train(training)
+    # NOTE: I'll have to comment this training out to keep the expert policy fixed
+    self.pi_agent.train(training) 
 
   def reset_optimizers(self):
     self.tx_agent.reset_optimizers()
@@ -130,6 +142,8 @@ class MentalIQL:
 
     self.internal_step += 1
 
+    # NOTE: self.pi_update updates the action policy model's weights. I'll
+    # have to comment this out to keep the expert policy fixed.
     fn_update_1, fn_update_2 = self.tx_update, self.pi_update
 
     loss_1, loss_2 = {}, {}
@@ -145,6 +159,8 @@ class MentalIQL:
     return option, action
 
   def choose_policy_action(self, state, option, sample=False):
+    # NOTE: to use a fixed actionc policy, I have to ensure I implement the
+    # choose_action function to sample from it
     return self.pi_agent.choose_action(state, option, sample)
 
   def choose_mental_state(self, state, prev_option, sample=False):
@@ -165,6 +181,7 @@ class MentalIQL:
     len_demo = len(state)
 
     with torch.no_grad():
+      # NOTE: expert policy object should also be able to compute log_probs
       log_pis = self.pi_agent.log_probs(state, action).view(
           -1, 1, self.lat_dim)  # len_demo x 1 x ct
       log_trs = self.tx_agent.log_probs(state, None)  # len_demo x (ct_1+1) x ct
