@@ -7,6 +7,7 @@ from .nn_models import (SimpleOptionQNetwork, DoubleOptionQCritic,
 # from .option_sac import OptionSAC
 from .option_iql import IQLOptionSAC, IQLOptionSoftQ
 from omegaconf import DictConfig
+from ..utils import DiscreteExpertPolicySampler
 
 
 def get_tx_pi_config(config: DictConfig):
@@ -31,7 +32,8 @@ def get_tx_pi_config(config: DictConfig):
 class MentalIQL:
 
   def __init__(self, config: DictConfig, obs_dim, action_dim, lat_dim,
-               discrete_obs, discrete_act):
+               discrete_obs, discrete_act,
+               fixed_pi=False, expert_policy : DiscreteExpertPolicySampler =None):
     self.discrete_obs = discrete_obs
     self.obs_dim = obs_dim
     self.action_dim = action_dim
@@ -66,11 +68,11 @@ class MentalIQL:
     # - choose_policy_action
     # - pi_agent acceessed attributes (i.e. log_probs)
     # - remove update functions
-    if discrete_act:
+    if discrete_act and not fixed_pi:
       self.pi_agent = IQLOptionSoftQ(config_pi, obs_dim, action_dim, lat_dim,
                                      discrete_obs, SimpleOptionQNetwork,
                                      self._get_pi_iq_vars)
-    else:
+    elif not discrete_act and not fixed_pi:
       if config.miql_pi_single_critic:
         critic_base = SingleOptionQCritic
       else:
@@ -83,18 +85,25 @@ class MentalIQL:
       self.pi_agent = IQLOptionSAC(config_pi, obs_dim, action_dim, lat_dim,
                                    discrete_obs, critic_base, actor,
                                    self._get_pi_iq_vars)
-
+    elif fixed_pi:
+      # Initialize pi_agent as the expert dataset policy
+      assert expert_policy is not None, "Expert policy must be provided if fixing pi"
+      self.pi_agent = expert_policy
+  
+    self.fixed_pi = fixed_pi
     self.train()
 
   def train(self, training=True):
     self.training = training
     self.tx_agent.train(training)
     # NOTE: I'll have to comment this training out to keep the expert policy fixed
-    self.pi_agent.train(training) 
+    if not self.fixed_pi:
+      self.pi_agent.train(training) 
 
   def reset_optimizers(self):
     self.tx_agent.reset_optimizers()
-    self.pi_agent.reset_optimizers()
+    if not self.fixed_pi:
+      self.pi_agent.reset_optimizers()
 
   def _get_tx_iq_vars(self, batch):
     prev_lat, _, state, latent, _, next_state, _, _, done = batch
@@ -144,13 +153,17 @@ class MentalIQL:
 
     # NOTE: self.pi_update updates the action policy model's weights. I'll
     # have to comment this out to keep the expert policy fixed.
-    fn_update_1, fn_update_2 = self.tx_update, self.pi_update
-
-    loss_1, loss_2 = {}, {}
+    # fn_update_1, fn_update_2 = self.tx_update, self.pi_update
+    fn_update_1 = self.tx_update
     loss_1 = fn_update_1(policy_batch, expert_batch, logger, step)
-    loss_2 = fn_update_2(policy_batch, expert_batch, logger, step)
 
-    return (loss_1, loss_2)
+    if not self.fixed_pi:
+      fn_update_2 = self.pi_update
+      loss_2 = fn_update_2(policy_batch, expert_batch, logger, step)
+
+      return (loss_1, loss_2)
+    
+    return (loss_1, 0)
 
   def choose_action(self, state, prev_option, prev_action, sample=False):
     'for compatibility with OptionIQL evaluate function'
@@ -159,8 +172,7 @@ class MentalIQL:
     return option, action
 
   def choose_policy_action(self, state, option, sample=False):
-    # NOTE: to use a fixed actionc policy, I have to ensure I implement the
-    # choose_action function to sample from it
+    # NOTE: the discrete expert policy sampler overrides this same function
     return self.pi_agent.choose_action(state, option, sample)
 
   def choose_mental_state(self, state, prev_option, sample=False):

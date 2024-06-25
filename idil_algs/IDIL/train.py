@@ -17,6 +17,8 @@ from .agent.make_agent import make_miql_agent
 import wandb
 import omegaconf
 
+# fixed pi impotr
+from .utils import DiscreteExpertPolicySampler
 
 def load_expert_data_w_labels(demo_path, num_trajs, n_labeled, seed):
   expert_dataset = ExpertDataset(demo_path, num_trajs, 1, seed + 42)
@@ -93,7 +95,7 @@ def train(config: omegaconf.DictConfig,
                                                  throw_on_missing=True)
 
   run_name = f"{config.alg_name}_{config.tag}"
-  wandb.init(project=f"{os.environ.get("WANDB_PROJECT")}-{env_name}",
+  wandb.init(project=f"{os.environ.get('WANDB_PROJECT')}-{env_name}",
              name=run_name,
              entity=os.environ.get("WANDB_ENTITY"),
              sync_tensorboard=True,
@@ -129,10 +131,6 @@ def train(config: omegaconf.DictConfig,
   eps_window = int(eps_window)
   max_explore_step = int(max_explore_step)
 
-  # NOTE: the agent's pi_agent is never publicly accessed
-  # so I shouldn't have to change anythin in the train.py
-  agent = make_miql_agent(config, env) 
-
   # Load expert data
   n_labeled = int(num_trajs * config.supervision)
   expert_dataset, traj_labels, cnt_label = load_expert_data_w_labels(
@@ -143,6 +141,16 @@ def train(config: omegaconf.DictConfig,
 
   wandb.run.summary["expert_avg"] = expert_avg
   wandb.run.summary["expert_std"] = expert_std
+
+  # NOTE: the agent's pi_agent is never publicly accessed
+  # so I shouldn't have to change anythin in the train.py
+  if hasattr(config, "expert_policy") and hasattr(config, "fixed_pi"):
+    expert_policy = DiscreteExpertPolicySampler(expert_dataset)
+    agent = make_miql_agent(config, env, fixed_pi=config.fixed_pi,
+                            expert_policy=expert_policy)
+
+  else:
+    agent = make_miql_agent(config, env) 
 
   output_suffix = f"_n{num_trajs}_l{cnt_label}"
   online_memory_replay = OptionMemory(replay_mem, seed + 1)
@@ -183,7 +191,10 @@ def train(config: omegaconf.DictConfig,
       with eval_mode(agent):
         # NOTE: sampling action from policy, use action to infer next state and then latent
         # this action will be added to the replay buffer
-        action = agent.choose_policy_action(state, latent, sample=True)
+        if hasattr(agent, "fixed_pi") and agent.fixed_pi:
+          action = expert_policy.choose_action(state, latent)
+        else:
+          action = agent.choose_policy_action(state, latent, sample=True)
 
         next_state, reward, done, info = env.step(action)
         next_latent = agent.choose_mental_state(next_state, latent, sample=True)

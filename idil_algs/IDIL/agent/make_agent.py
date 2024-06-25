@@ -4,7 +4,8 @@ from .mental_iql import MentalIQL
 from omegaconf import DictConfig
 
 
-def make_miql_agent(config: DictConfig, env: gym.Env):
+def make_miql_agent(config: DictConfig, env: gym.Env,
+                    fixed_pi: bool = False, expert_policy = None):
 
   latent_dim = config.dim_c
   if isinstance(env.observation_space, Discrete):
@@ -26,6 +27,11 @@ def make_miql_agent(config: DictConfig, env: gym.Env):
     action_dim = env.action_space.shape[0]
     discrete_act = False
 
+  if fixed_pi:
+    assert expert_policy is not None, "Expert policy path is required for fixed pi."
+
   agent = MentalIQL(config, obs_dim, action_dim, latent_dim, discrete_obs,
-                    discrete_act)
+                    discrete_act,
+                    fixed_pi=fixed_pi,
+                    expert_policy=expert_policy)
   return agent

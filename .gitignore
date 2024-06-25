@@ -8,3 +8,5 @@ outputs/
 wandb/
 idil_train/result/
 gym_monitor.csv
+
+*.pyc
