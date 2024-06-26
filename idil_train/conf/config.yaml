@@ -1,5 +1,5 @@
 seed: 0
-device: cpu
+device: cuda:0
 n_thread: 1
 base_dir: ""
 pretrain_path: ""
@@ -25,3 +25,7 @@ defaults:
   - env: CleanupSingle-v0
   - optional base: "" # just to save a special_setting name to enable OmegaConf interpolation
   - optional special_setting: ${alg}/${base} # actual yaml path for a special setting
+
+
+# fixed pi approach
+fixed_pi: false
