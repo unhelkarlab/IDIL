@@ -30,4 +30,9 @@ setup(name="idil",
           'hydra-core>=1.3',
           'wandb>=0.15',
           'imitation==0.4',
+          'pip==21',
+          'setuptools==65.5.0 ',
+          'swig',
+          'wheel==0.38.0',
+          'python-dotenv'
       ])
