@@ -142,10 +142,8 @@ def train(config: omegaconf.DictConfig,
   wandb.run.summary["expert_avg"] = expert_avg
   wandb.run.summary["expert_std"] = expert_std
 
-  # NOTE: the agent's pi_agent is never publicly accessed
-  # so I shouldn't have to change anythin in the train.py
-  if hasattr(config, "expert_policy") and hasattr(config, "fixed_pi"):
-    expert_policy = DiscreteExpertPolicySampler(expert_dataset)
+  if config.fixed_pi:
+    expert_policy = DiscreteExpertPolicySampler(expert_dataset, device=config.device)
     agent = make_miql_agent(config, env, fixed_pi=config.fixed_pi,
                             expert_policy=expert_policy)
 
@@ -284,8 +282,9 @@ def train(config: omegaconf.DictConfig,
         if explore_steps % log_interval == 0:
           for key, loss in tx_losses.items():
             writer.add_scalar("tx_loss/" + key, loss, global_step=explore_steps)
-          for key, loss in pi_losses.items():
-            writer.add_scalar("pi_loss/" + key, loss, global_step=explore_steps)
+          if not config.fixed_pi:
+            for key, loss in pi_losses.items():
+              writer.add_scalar("pi_loss/" + key, loss, global_step=explore_steps)
 
       if done:
         break

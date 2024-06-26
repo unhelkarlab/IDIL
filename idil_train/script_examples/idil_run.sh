@@ -43,3 +43,8 @@ python idil_train/run_algs.py alg=idil base=boxpush_base \
 python idil_train/run_algs.py alg=idil base=boxpush_base \
        env=CleanupSingle-v0 seed=0 supervision=0.0
   
+
+###### MISC
+# Task set with fixed expert policy
+taskset --cpu-list 0-14 nohup python idil_train/run_algs.py alg=idil base=boxpush_base \
+       env=CleanupSingle-v0 seed=0 supervision=0.0 fixed_pi=true & ⁠

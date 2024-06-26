@@ -16,6 +16,32 @@
                 "env=MultiGoals2D_3-v0", "supervision=0.0",
                 "seed=0" 
             ]
+        },
+        {
+            "name": "Debug Discrete Vanilla",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=boxpush_base",
+                "env=CleanupSingle-v0", "supervision=0.0",
+                "seed=0"
+            ]
+        },
+        {
+            "name": "Debug Discrete with FEP",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=boxpush_base",
+                "env=CleanupSingle-v0", "supervision=0.0",
+                "seed=0" , "fixed_pi=true"
+            ]
         }
     ]
 }

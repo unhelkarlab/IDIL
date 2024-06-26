@@ -63,11 +63,6 @@ class MentalIQL:
     # NOTE: this pi agent represents the learned action policy
     # To use the expert action policy, I'll have to replace this
     # intialization with the expert action policy.
-    # TODO: replace the pi_agent initialization with a fixed expert, main
-    # functionalities to handle:
-    # - choose_policy_action
-    # - pi_agent acceessed attributes (i.e. log_probs)
-    # - remove update functions
     if discrete_act and not fixed_pi:
       self.pi_agent = IQLOptionSoftQ(config_pi, obs_dim, action_dim, lat_dim,
                                      discrete_obs, SimpleOptionQNetwork,
@@ -196,7 +191,7 @@ class MentalIQL:
       # NOTE: expert policy object should also be able to compute log_probs
       log_pis = self.pi_agent.log_probs(state, action).view(
           -1, 1, self.lat_dim)  # len_demo x 1 x ct
-      log_trs = self.tx_agent.log_probs(state, None)  # len_demo x (ct_1+1) x ct
+      log_trs = self.tx_agent.log_probs(state, None)  # len_demo x (ct_1+1) x ct (ct is the latent at a given t)
       log_prob = log_trs[:, :-1] + log_pis
       log_prob0 = log_trs[0, -1] + log_pis[0, 0]
       # forward
