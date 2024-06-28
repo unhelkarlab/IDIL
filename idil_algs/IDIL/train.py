@@ -143,9 +143,8 @@ def train(config: omegaconf.DictConfig,
   wandb.run.summary["expert_std"] = expert_std
 
   if config.fixed_pi:
-    expert_policy = DiscreteExpertPolicySampler(expert_dataset, device=config.device)
     agent = make_miql_agent(config, env, fixed_pi=config.fixed_pi,
-                            expert_policy=expert_policy)
+                            expert_dataset=expert_dataset)
 
   else:
     agent = make_miql_agent(config, env) 

@@ -7,7 +7,7 @@ from .nn_models import (SimpleOptionQNetwork, DoubleOptionQCritic,
 # from .option_sac import OptionSAC
 from .option_iql import IQLOptionSAC, IQLOptionSoftQ
 from omegaconf import DictConfig
-from ..utils import DiscreteExpertPolicySampler
+from ..utils import DiscreteExpertPolicySampler, ContinuousExpertPolicySampler
 
 
 def get_tx_pi_config(config: DictConfig):
@@ -33,7 +33,7 @@ class MentalIQL:
 
   def __init__(self, config: DictConfig, obs_dim, action_dim, lat_dim,
                discrete_obs, discrete_act,
-               fixed_pi=False, expert_policy : DiscreteExpertPolicySampler =None):
+               fixed_pi=False, expert_dataset = None):
     self.discrete_obs = discrete_obs
     self.obs_dim = obs_dim
     self.action_dim = action_dim
@@ -63,28 +63,34 @@ class MentalIQL:
     # NOTE: this pi agent represents the learned action policy
     # To use the expert action policy, I'll have to replace this
     # intialization with the expert action policy.
-    if discrete_act and not fixed_pi:
-      self.pi_agent = IQLOptionSoftQ(config_pi, obs_dim, action_dim, lat_dim,
-                                     discrete_obs, SimpleOptionQNetwork,
-                                     self._get_pi_iq_vars)
-    elif not discrete_act and not fixed_pi:
-      if config.miql_pi_single_critic:
-        critic_base = SingleOptionQCritic
-      else:
-        critic_base = DoubleOptionQCritic
-      actor = DiagGaussianOptionActor(
-          obs_dim, action_dim, lat_dim, config_pi.hidden_policy,
-          config_pi.activation, config_pi.log_std_bounds,
-          config_pi.bounded_actor, config_pi.use_nn_logstd,
-          config_pi.clamp_action_logstd)
-      self.pi_agent = IQLOptionSAC(config_pi, obs_dim, action_dim, lat_dim,
-                                   discrete_obs, critic_base, actor,
-                                   self._get_pi_iq_vars)
-    elif fixed_pi:
+    if fixed_pi:
       # Initialize pi_agent as the expert dataset policy
-      assert expert_policy is not None, "Expert policy must be provided if fixing pi"
-      self.pi_agent = expert_policy
-  
+      assert expert_dataset is not None, "Expert policy must be provided if fixing pi"
+      if discrete_act:
+        self.pi_agent = DiscreteExpertPolicySampler(expert_dataset, device=self.device)
+      elif not discrete_act:
+        self.pi_agent = ContinuousExpertPolicySampler(expert_dataset, device=self.device)
+    
+    # if expert policy is not fixed, initialize pi_agent as a SAC model (cont) or SoftQ (disc)
+    else:
+      if discrete_act:
+        self.pi_agent = IQLOptionSoftQ(config_pi, obs_dim, action_dim, lat_dim,
+                                      discrete_obs, SimpleOptionQNetwork,
+                                      self._get_pi_iq_vars)
+      elif not discrete_act:
+        if config.miql_pi_single_critic:
+          critic_base = SingleOptionQCritic
+        else:
+          critic_base = DoubleOptionQCritic
+        actor = DiagGaussianOptionActor(
+            obs_dim, action_dim, lat_dim, config_pi.hidden_policy,
+            config_pi.activation, config_pi.log_std_bounds,
+            config_pi.bounded_actor, config_pi.use_nn_logstd,
+            config_pi.clamp_action_logstd)
+        self.pi_agent = IQLOptionSAC(config_pi, obs_dim, action_dim, lat_dim,
+                                    discrete_obs, critic_base, actor,
+                                    self._get_pi_iq_vars)
+      
     self.fixed_pi = fixed_pi
     self.train()
 
