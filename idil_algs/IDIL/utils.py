@@ -5,6 +5,7 @@ import numpy as np
 import pickle as pkl
 import torch
 import os
+import multiprocessing as mp
 
 
 class DiscreteExpertPolicySampler:
@@ -120,7 +121,7 @@ class ContinuousExpertPolicySampler:
   choose_action method to sample from a KDE of the nearest seen actions.
   """
 
-  def __init__(self, dataset, device, bandwidth=0.1, n_neighbors=5):
+  def __init__(self, dataset, device, bandwidth=0.1, n_neighbors=10):
     self.expert_dataset = dataset
     self.device = device
     self.bandwidth = bandwidth
@@ -132,12 +133,11 @@ class ContinuousExpertPolicySampler:
     Parse state, actions and latent lists from dataset and create a list of (state, latent, action) tuples.
     Also create KNN models for efficient nearest neighbor search.
     """
-    states = self._flatten_list(self.expert_dataset.trajectories["states"])
-    actions = self._flatten_list(self.expert_dataset.trajectories["actions"])
-    latents = self._flatten_list(self.expert_dataset.trajectories["latents"])
+    self.states = np.array(self._flatten_list(self.expert_dataset.trajectories["states"]))
+    self.actions = np.array(self._flatten_list(self.expert_dataset.trajectories["actions"]))
+    self.latents = np.array(self._flatten_list(self.expert_dataset.trajectories["latents"]))
 
-    self.data = np.hstack([states, latents])
-    self.actions = np.array(actions)
+    self.data = np.hstack([self.states, self.latents.reshape(-1, 1)])
 
     # Create KNN model
     self.knn_model = NearestNeighbors(
@@ -156,9 +156,11 @@ class ContinuousExpertPolicySampler:
     """
     Sample an action from the expert policy given a state and latent using KNN and KDE.
     """
-    query = np.hstack([state, latent]).reshape(1, -1)
-    distances, indices = self.knn_model.kneighbors(query)
-    nearest_actions = self.actions[indices[np.argmin(distances)]]
+    # query = np.hstack([state, latent]).reshape(1, -1)
+    # _, index = self.knn_model.kneighbors(query)
+    # nearest_actions = self.actions[index.squeeze()]
+
+    nearest_actions = self._get_knbr_actions(state, latent)
 
     kde = KernelDensity(
         kernel='gaussian', bandwidth=self.bandwidth).fit(nearest_actions)
@@ -180,13 +182,17 @@ class ContinuousExpertPolicySampler:
     log_probs = []
     
     for s, a in zip(state, action):
-      query = np.hstack([s, a]).reshape(1, -1)
-      distances, indices = self.knn_model.kneighbors(query)
-      nearest_actions = self.actions[indices[np.argmin(distances)]]
-      kde = KernelDensity(
-          kernel='gaussian', bandwidth=self.bandwidth).fit(nearest_actions)
-      log_prob = kde.score_samples([a])[0]
-      log_probs.append(log_prob)
+      # sample uniformly from all latents to reduce computation complexity
+      _latents = np.random.choice(self.latents, 500)
+      # for lat in _latents:
+      #   nearest_actions = self._get_knbr_actions(s, lat)
+
+      #   kde = KernelDensity(
+      #       kernel='gaussian',
+      #       bandwidth=self.bandwidth).fit(nearest_actions)
+      #   log_prob = 1/(1 + np.exp(-kde.score_samples([a])[0])) # convert log-likelihood to prob
+      #   log_probs.append(np.log(log_prob))
+
 
     log_probs = np.array(log_probs)
     return torch.tensor(log_probs, device=self.device)
