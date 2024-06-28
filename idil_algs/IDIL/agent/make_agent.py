@@ -5,7 +5,7 @@ from omegaconf import DictConfig
 
 
 def make_miql_agent(config: DictConfig, env: gym.Env,
-                    fixed_pi: bool = False, expert_policy = None):
+                    fixed_pi: bool = False, expert_dataset = None):
 
   latent_dim = config.dim_c
   if isinstance(env.observation_space, Discrete):
@@ -28,10 +28,10 @@ def make_miql_agent(config: DictConfig, env: gym.Env,
     discrete_act = False
 
   if fixed_pi:
-    assert expert_policy is not None, "Expert policy path is required for fixed pi."
+    assert expert_dataset is not None, "Expert dataset object is required for fixed pi."
 
   agent = MentalIQL(config, obs_dim, action_dim, latent_dim, discrete_obs,
                     discrete_act,
                     fixed_pi=fixed_pi,
-                    expert_policy=expert_policy)
+                    expert_dataset=expert_dataset)
   return agent
