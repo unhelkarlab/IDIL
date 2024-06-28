@@ -14,7 +14,8 @@
             "args": [
                 "alg=idil", "base=MultiGoals2D_base",
                 "env=MultiGoals2D_3-v0", "supervision=0.0",
-                "seed=0" 
+                "seed=0",
+                "tag=debug"
             ]
         },
         {
@@ -27,7 +28,8 @@
             "args": [
                 "alg=idil", "base=boxpush_base",
                 "env=CleanupSingle-v0", "supervision=0.0",
-                "seed=0"
+                "seed=0",
+                "tag=debug-disc-vanilla"
             ]
         },
         {
@@ -40,8 +42,37 @@
             "args": [
                 "alg=idil", "base=boxpush_base",
                 "env=CleanupSingle-v0", "supervision=0.0",
-                "seed=0" , "fixed_pi=true"
+                "seed=0" , "fixed_pi=true",
+                "tag=debug-disc-fep"
             ]
-        }
+        },
+        {
+            "name": "Debug Continuous Vanilla",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=MultiGoals2D_base",
+                "env=MultiGoals2D_3-v0", "supervision=0.0",
+                "seed=0", "fixed_pi=false", "tag=debug-cont-vanilla"
+            ]
+        },        
+        {
+            "name": "Debug Continuous with FEP",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=MultiGoals2D_base",
+                "env=MultiGoals2D_3-v0", "supervision=0.0",
+                "seed=0", "fixed_pi=true", "tag=debug-cont-fep"
+            ]
+        },
+        
+        
     ]
 }
