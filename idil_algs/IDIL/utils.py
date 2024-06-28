@@ -6,6 +6,9 @@ import pickle as pkl
 import torch
 import os
 import multiprocessing as mp
+import dotenv
+
+dotenv.load_dotenv(dotenv.find_dotenv())
 
 
 class DiscreteExpertPolicySampler:
@@ -136,16 +139,25 @@ class ContinuousExpertPolicySampler:
     self.states = np.array(self._flatten_list(self.expert_dataset.trajectories["states"]))
     self.actions = np.array(self._flatten_list(self.expert_dataset.trajectories["actions"]))
     self.latents = np.array(self._flatten_list(self.expert_dataset.trajectories["latents"]))
+    
+    self.state_action_stack = np.hstack([self.states, self.actions])
 
     self.data = np.hstack([self.states, self.latents.reshape(-1, 1)])
 
     # Create KNN model
     self.knn_model = NearestNeighbors(
         n_neighbors=self.n_neighbors, algorithm='auto').fit(self.data)
+    
+    # Create KNN model for (state, action) for latent logprob 
+    self.knn_model_sa = NearestNeighbors(
+        n_neighbors=self.n_neighbors, algorithm='auto').fit(self.state_action_stack)
 
   def _flatten_list(self, nested_list):
     return [item for sublist in nested_list for item in sublist]
 
+
+  # TODO: refactor this function because KNN.kneighbors function is fully 
+  # vectorized
   def _get_knbr_actions(self, state, latent):
     """Aux function to query the KNN model for nearest neighbors"""
     query = np.hstack([state, latent]).reshape(1, -1)
@@ -173,29 +185,45 @@ class ContinuousExpertPolicySampler:
     Mock update and return 0 loss as we're directly matching the expert policy
     """
     return 0
+  
+  def _compute_log_prob(self, state, action, latent):
+    # get nearest actions
+    nearest_actions = self._get_knbr_actions(state, latent)
 
-  def log_probs(self, state, action):
-    """
-    Given a list of states and actions belonging to a trajectory,
-    compute the log probabilities of each latent at each (state, action) pair.
-    """
-    log_probs = []
+    # compute kde
+    kde = KernelDensity(
+        kernel='gaussian',
+        bandwidth=self.bandwidth).fit(nearest_actions)
     
-    for s, a in zip(state, action):
-      # sample uniformly from all latents to reduce computation complexity
-      _latents = np.random.choice(self.latents, 500)
-      # for lat in _latents:
-      #   nearest_actions = self._get_knbr_actions(s, lat)
-
-      #   kde = KernelDensity(
-      #       kernel='gaussian',
-      #       bandwidth=self.bandwidth).fit(nearest_actions)
-      #   log_prob = 1/(1 + np.exp(-kde.score_samples([a])[0])) # convert log-likelihood to prob
-      #   log_probs.append(np.log(log_prob))
+    log_prob = 1 / (1 + np.exp(-kde.score_samples([action])[0]))  # convert log-likelihood to prob
+    return np.log(log_prob)
 
 
-    log_probs = np.array(log_probs)
-    return torch.tensor(log_probs, device=self.device)
+  def log_probs(self, state_array, action_array):
+    """
+    Given two arrays, of states and actions, compute the closest 
+    state and action samples for each zipped pair, then build a KDE estimator
+    to compute the log probability for each latent
+
+    Output size is (len(state_array), len(self.latents))
+    """
+    stacked_sa = np.hstack([state_array, action_array])
+
+    # get nearest nbrs matrix for (state, action) KNN model
+    _, indices = self.knn_model_sa.kneighbors(stacked_sa)
+
+    # get nearest intents for those actions
+    latents_matrix = self.latents[indices]
+
+    # TODO: get discrete probabilities for each latent (latents are discrete!)
+
+    # TODO: compute log probs for each latent
+
+    # TODO: ensure returning vector is (len_state_arr, latent_dim) shape
+    
+
+
+    
 
   def save(self, path, suffix=""):
     """
