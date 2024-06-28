@@ -188,10 +188,10 @@ def train(config: omegaconf.DictConfig,
       with eval_mode(agent):
         # NOTE: sampling action from policy, use action to infer next state and then latent
         # this action will be added to the replay buffer
-        if hasattr(agent, "fixed_pi") and agent.fixed_pi:
-          action = expert_policy.choose_action(state, latent)
-        else:
-          action = agent.choose_policy_action(state, latent, sample=True)
+        # if hasattr(agent, "fixed_pi") and agent.fixed_pi:
+        #   action = expert_policy.choose_action(state, latent)
+        # else:
+        action = agent.choose_policy_action(state, latent, sample=True)
 
         next_state, reward, done, info = env.step(action)
         next_latent = agent.choose_mental_state(next_state, latent, sample=True)
