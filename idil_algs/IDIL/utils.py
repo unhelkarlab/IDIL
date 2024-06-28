@@ -152,7 +152,7 @@ class ContinuousExpertPolicySampler:
     """
     query = np.hstack([state, latent]).reshape(1, -1)
     distances, indices = self.knn_model.kneighbors(query)
-    nearest_actions = self.actions[indices[0]]
+    nearest_actions = self.actions[indices[np.argmin(distances)]]
 
     kde = KernelDensity(
         kernel='gaussian', bandwidth=self.bandwidth).fit(nearest_actions)
