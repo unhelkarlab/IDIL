@@ -144,7 +144,13 @@ class ContinuousExpertPolicySampler:
         n_neighbors=self.n_neighbors, algorithm='auto').fit(self.data)
 
   def _flatten_list(self, nested_list):
-    return np.vstack(nested_list)
+    return [item for sublist in nested_list for item in sublist]
+
+  def _get_knbr_actions(self, state, latent):
+    """Aux function to query the KNN model for nearest neighbors"""
+    query = np.hstack([state, latent]).reshape(1, -1)
+    _, index = self.knn_model.kneighbors(query)
+    return self.actions[index.squeeze()]
 
   def choose_action(self, state, latent, *args):
     """
