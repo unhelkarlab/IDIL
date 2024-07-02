@@ -218,4 +218,6 @@ class MentalIQL:
       for i in range(len_demo, 0, -1):
         c_array[i - 1] = max_path[i - 1][c_array[i]]
     return (c_array[1:].detach().cpu().numpy(),
-            log_prob_traj.detach().cpu().numpy())
+            log_prob_traj.detach().cpu().numpy(),
+            # include log prob array for entropy scoring
+            log_prob.detach().cpu().numpy())

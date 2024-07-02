@@ -43,15 +43,29 @@ def load_expert_data_w_labels(demo_path, num_trajs, n_labeled, seed):
   return expert_dataset, traj_labels, cnt_label
 
 
-def infer_mental_states_all_demo(agent: MentalIQL, expert_traj, traj_labels):
+def infer_mental_states_all_demo(agent: MentalIQL,
+                                 expert_traj, 
+                                 traj_labels,
+                                 entropy_scoring: bool = False):
   num_samples = len(expert_traj["states"])
   list_mental_states = []
   for i_e in range(num_samples):
+    # TODO: refactor this for loop so that, if expert intents are available, use them
+    # and if not available run entropy scoring on the missing labels
     if traj_labels[i_e] is None:
-      expert_states = expert_traj["states"][i_e]
-      expert_actions = expert_traj["actions"][i_e]
-      mental_array, _ = agent.infer_mental_states(expert_states, expert_actions)
+      expert_states = expert_traj["states"][i_e] # list of len expert_traj['lengths'][i_e]
+      expert_actions = expert_traj["actions"][i_e] # list of len expert_traj['lengths'][i_e]
+      
+      # if expert intents are not available, we can infer them
+      # using the intent policy model
+      # TODO: implement log prob computation of entropy
+      # TODO: first, slice log_probs properly to ensure that it is using the probs for a certain 
+      # intent
+      # TODO: alternatively, work on the infer_mental_states method to return a pre-processed array
+      # of probabilities
+      mental_array, _, log_probs = agent.infer_mental_states(expert_states, expert_actions)
     else:
+      # if expert intents are available, use them
       mental_array = traj_labels[i_e]
 
     list_mental_states.append(mental_array)
@@ -186,11 +200,8 @@ def train(config: omegaconf.DictConfig,
 
     for episode_step in count():
       with eval_mode(agent):
-        # NOTE: sampling action from policy, use action to infer next state and then latent
+        # sampling action from policy, use action to infer next state and then latent
         # this action will be added to the replay buffer
-        # if hasattr(agent, "fixed_pi") and agent.fixed_pi:
-        #   action = expert_policy.choose_action(state, latent)
-        # else:
         action = agent.choose_policy_action(state, latent, sample=True)
 
         next_state, reward, done, info = env.step(action)
@@ -248,6 +259,7 @@ def train(config: omegaconf.DictConfig,
         # infer mental states of expert data
         if (expert_data is None
             or explore_steps % config.demo_latent_infer_interval == 0):
+          # infer mental states for unlabeled slots in trajectories 
           mental_states = infer_mental_states_all_demo(
               agent, expert_dataset.trajectories, traj_labels)
           mental_states_after_end = infer_last_next_mental_state(
@@ -271,7 +283,7 @@ def train(config: omegaconf.DictConfig,
           policy_batch = online_memory_replay.get_samples(
               batch_size, agent.device)
           
-          # NOTE: expert batch is the expert distribution
+          # expert batch is the expert distribution
           expert_batch = get_samples(batch_size, expert_data)
 
           tx_losses, pi_losses = agent.miql_update(
