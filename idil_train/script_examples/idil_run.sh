@@ -45,7 +45,10 @@ python idil_train/run_algs.py alg=idil base=boxpush_base \
   
 
 ###### MISC
-# Nohup with fixed expert policy
-nohup python idil_train/run_algs.py alg=idil base=boxpush_base env=CleanupSingle-v0 seed=0 supervision=0.0 fixed_pi=true  tag='fep-pi'& ⁠
-# Nohup without fixed expert policy
-nohup python idil_train/run_algs.py alg=idil base=boxpush_base env=CleanupSingle-v0 seed=0 supervision=0.0 fixed_pi=false & ⁠
+# Nohup with fixed expert policy (discrete)
+nohup python idil_train/run_algs.py alg=idil base=boxpush_base env=CleanupSingle-v0 seed=0 supervision=0.0 fixed_pi=true  tag='disc-fep'&
+# Nohup without fixed expert policy (discrete)
+nohup python idil_train/run_algs.py alg=idil base=boxpush_base env=CleanupSingle-v0 seed=0 supervision=0.0 fixed_pi=false &
+
+# Nohup with fixed expert policy (continuous)
+nohup python idil_train/run_algs.py alg=idil base=MultiGoals2D_base env=MultiGoals2D_3-v0 supervision=0.0 seed=0 fixed_pi=true tag='cont-fep' &
