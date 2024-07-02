@@ -139,12 +139,13 @@ class ContinuousExpertPolicySampler:
     self.states = np.array(self._flatten_list(self.expert_dataset.trajectories["states"]))
     self.actions = np.array(self._flatten_list(self.expert_dataset.trajectories["actions"]))
     self.latents = np.array(self._flatten_list(self.expert_dataset.trajectories["latents"]))
+    self.latent_space = set(self.latents) # compute unique latent values
     
     self.state_action_stack = np.hstack([self.states, self.actions])
 
     self.data = np.hstack([self.states, self.latents.reshape(-1, 1)])
 
-    # Create KNN model
+    # Create KNN model for (state, latent) for action sampling
     self.knn_model = NearestNeighbors(
         n_neighbors=self.n_neighbors, algorithm='auto').fit(self.data)
     
@@ -168,10 +169,6 @@ class ContinuousExpertPolicySampler:
     """
     Sample an action from the expert policy given a state and latent using KNN and KDE.
     """
-    # query = np.hstack([state, latent]).reshape(1, -1)
-    # _, index = self.knn_model.kneighbors(query)
-    # nearest_actions = self.actions[index.squeeze()]
-
     nearest_actions = self._get_knbr_actions(state, latent)
 
     kde = KernelDensity(
@@ -198,6 +195,20 @@ class ContinuousExpertPolicySampler:
     log_prob = 1 / (1 + np.exp(-kde.score_samples([action])[0]))  # convert log-likelihood to prob
     return np.log(log_prob)
 
+  def _get_latent_log_prob(self, latent_array): 
+    """
+    Given an array of observed latents, compute the 
+    discrete probability across the entire model's latent space
+    """
+    if not isinstance(latent_array, np.ndarray):
+      latent_array = np.array(latent_array)
+
+    # Get discrete probabilities for each latent (latents are discrete!)
+    eps = 1e-8
+    latent_probs = np.array([np.where(latent_array == l, 1-eps, eps).mean() 
+                             for l in self.latent_space]) # ensure returning vector is (len_state_arr, latent_dim) shape
+    log_probs = np.log(latent_probs)
+    return log_probs
 
   def log_probs(self, state_array, action_array):
     """
@@ -214,16 +225,13 @@ class ContinuousExpertPolicySampler:
 
     # get nearest intents for those actions
     latents_matrix = self.latents[indices]
-
-    # TODO: get discrete probabilities for each latent (latents are discrete!)
-
-    # TODO: compute log probs for each latent
-
-    # TODO: ensure returning vector is (len_state_arr, latent_dim) shape
+    log_probs = []
+    for nbr_latents in latents_matrix:
+      log_probs.append(self._get_latent_log_prob(nbr_latents))
     
+    log_probs = torch.tensor(log_probs, device=self.device)
+    return log_probs
 
-
-    
 
   def save(self, path, suffix=""):
     """
