@@ -194,7 +194,6 @@ class MentalIQL:
     len_demo = len(state)
 
     with torch.no_grad():
-      # NOTE: expert policy object should also be able to compute log_probs
       log_pis = self.pi_agent.log_probs(state, action).view(
           -1, 1, self.lat_dim)  # len_demo x 1 x ct
       log_trs = self.tx_agent.log_probs(state, None)  # len_demo x (ct_1+1) x ct (ct is the latent at a given t)
