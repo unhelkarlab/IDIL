@@ -63,7 +63,7 @@ def infer_mental_states_all_demo(agent: MentalIQL,
       # intent
       # TODO: alternatively, work on the infer_mental_states method to return a pre-processed array
       # of probabilities
-      mental_array, _, log_probs = agent.infer_mental_states(expert_states, expert_actions)
+      mental_array, _, entropy = agent.infer_mental_states(expert_states, expert_actions)
     else:
       # if expert intents are available, use them
       mental_array = traj_labels[i_e]
