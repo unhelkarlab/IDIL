@@ -46,40 +46,54 @@ def load_expert_data_w_labels(demo_path, num_trajs, n_labeled, seed):
 def infer_mental_states_all_demo(agent: MentalIQL,
                                  expert_traj, 
                                  traj_labels,
-                                 entropy_scoring: bool = False):
+                                 entropy_scoring: bool = False,
+                                 k: int = 10):
   num_samples = len(expert_traj["states"])
   list_mental_states = []
+  inferred_mental_arrays = []
   for i_e in range(num_samples):
-    # TODO: refactor this for loop so that, if expert intents are available, use them
-    # and if not available run entropy scoring on the missing labels
     if traj_labels[i_e] is None:
       expert_states = expert_traj["states"][i_e] # list of len expert_traj['lengths'][i_e]
       expert_actions = expert_traj["actions"][i_e] # list of len expert_traj['lengths'][i_e]
       
       # if expert intents are not available, we can infer them
       # using the intent policy model
-      # TODO: implement log prob computation of entropy
-      # TODO: first, slice log_probs properly to ensure that it is using the probs for a certain 
-      # intent
-      # TODO: alternatively, work on the infer_mental_states method to return a pre-processed array
-      # of probabilities
       mental_array, _, entropy = agent.infer_mental_states(expert_states, expert_actions)
+      inferred_mental_arrays.append((mental_array, entropy))
     else:
       # if expert intents are available, use them
       mental_array = traj_labels[i_e]
+      # only append mental array if labels are available
+      list_mental_states.append(mental_array)
 
-    list_mental_states.append(mental_array)
 
+  if entropy_scoring and k:
+    # sort the inferred mental arrays by entropy, in descending entropy order
+    inferred_mental_arrays = sorted(inferred_mental_arrays, key=lambda x: x[1], reverse=True)
+    # select the top k mental arrays
+    _k = min(k, len(inferred_mental_arrays))
+    inferred_mental_arrays = inferred_mental_arrays[:_k]
+
+  _extend_mental_array = [mental_array for mental_array, _ in inferred_mental_arrays]
+  list_mental_states.extend(_extend_mental_array)
+
+
+  # TODO: return indices of selected inferred mental arrays
   return list_mental_states
 
 
 def infer_last_next_mental_state(agent: MentalIQL, expert_traj,
-                                 list_mental_states):
-  num_samples = len(expert_traj["states"])
+                                 list_mental_states, k: int = None):
+  num_samples = min(len(expert_traj["states"]), k)
   list_last_next_mental_state = []
   for i_e in range(num_samples):
+    # TODO: index expert_traj taking the i_e indices not from an 
+    # ordered range but from the indices of the selected mental arrays in 
+    # the previous step
     last_next_state = expert_traj["next_states"][i_e][-1]
     last_mental_state = list_mental_states[i_e][-1]
+
+
     last_next_mental_state = agent.choose_mental_state(last_next_state,
                                                        last_mental_state, False)
     list_last_next_mental_state.append(last_next_mental_state)
@@ -261,9 +275,13 @@ def train(config: omegaconf.DictConfig,
             or explore_steps % config.demo_latent_infer_interval == 0):
           # infer mental states for unlabeled slots in trajectories 
           mental_states = infer_mental_states_all_demo(
-              agent, expert_dataset.trajectories, traj_labels)
+              agent, expert_dataset.trajectories, traj_labels,
+              config.entropy_scoring, config.k) # entropy scoring configuration
+          
           mental_states_after_end = infer_last_next_mental_state(
-              agent, expert_dataset.trajectories, mental_states)
+              agent, expert_dataset.trajectories, mental_states,
+              k=config.k)
+          
           exb = get_expert_batch(
               expert_dataset.trajectories,
               mental_states,
