@@ -48,7 +48,7 @@ def infer_mental_states_all_demo(agent: MentalIQL,
                                  expert_traj, 
                                  traj_labels,
                                  entropy_scoring: bool = False,
-                                 k: int = 10):
+                                 k: float = 1.0):
   num_samples = len(expert_traj["states"])
   list_mental_states = []
   list_mental_states_idx = []
@@ -78,7 +78,8 @@ def infer_mental_states_all_demo(agent: MentalIQL,
                                     key=lambda x: x[2],
                                     reverse=True)
     # select the top k mental arrays
-    _k = min(k, len(inferred_mental_arrays))
+    # _k = min(k, len(inferred_mental_arrays))
+    _k = int(k * len(inferred_mental_arrays))
     inferred_mental_arrays = inferred_mental_arrays[:_k]
 
   _extend_mental_array = [mental_array for mental_array, _, _ in inferred_mental_arrays]
