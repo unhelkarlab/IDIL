@@ -79,7 +79,7 @@ def main(cfg: DictConfig):
   cur_dir = os.path.dirname(__file__)
   cfg.base_dir = cur_dir
   print(OmegaConf.to_yaml(cfg))
-
+  
   run_alg(cfg)
 
 
