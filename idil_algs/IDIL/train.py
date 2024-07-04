@@ -1,5 +1,6 @@
 import os
 import random
+from typing import List
 import numpy as np
 import torch
 from itertools import count
@@ -50,7 +51,9 @@ def infer_mental_states_all_demo(agent: MentalIQL,
                                  k: int = 10):
   num_samples = len(expert_traj["states"])
   list_mental_states = []
+  list_mental_states_idx = []
   inferred_mental_arrays = []
+
   for i_e in range(num_samples):
     if traj_labels[i_e] is None:
       expert_states = expert_traj["states"][i_e] # list of len expert_traj['lengths'][i_e]
@@ -59,40 +62,42 @@ def infer_mental_states_all_demo(agent: MentalIQL,
       # if expert intents are not available, we can infer them
       # using the intent policy model
       mental_array, _, entropy = agent.infer_mental_states(expert_states, expert_actions)
-      inferred_mental_arrays.append((mental_array, entropy))
+      inferred_mental_arrays.append((mental_array, i_e, entropy))
+
     else:
       # if expert intents are available, use them
       mental_array = traj_labels[i_e]
       # only append mental array if labels are available
       list_mental_states.append(mental_array)
+      list_mental_states_idx.append(i_e)
 
 
   if entropy_scoring and k:
     # sort the inferred mental arrays by entropy, in descending entropy order
-    inferred_mental_arrays = sorted(inferred_mental_arrays, key=lambda x: x[1], reverse=True)
+    inferred_mental_arrays = sorted(inferred_mental_arrays,
+                                    key=lambda x: x[2],
+                                    reverse=True)
     # select the top k mental arrays
     _k = min(k, len(inferred_mental_arrays))
     inferred_mental_arrays = inferred_mental_arrays[:_k]
 
-  _extend_mental_array = [mental_array for mental_array, _ in inferred_mental_arrays]
+  _extend_mental_array = [mental_array for mental_array, _, _ in inferred_mental_arrays]
+  _extend_mental_array_idx = [i_e for _, i_e, _ in inferred_mental_arrays]
+
   list_mental_states.extend(_extend_mental_array)
+  list_mental_states_idx.extend(_extend_mental_array_idx)
 
-
-  # TODO: return indices of selected inferred mental arrays
-  return list_mental_states
+  return list_mental_states, list_mental_states_idx
 
 
 def infer_last_next_mental_state(agent: MentalIQL, expert_traj,
-                                 list_mental_states, k: int = None):
-  num_samples = min(len(expert_traj["states"]), k)
+                                 list_mental_states,
+                                 list_mental_states_idx: List[int],
+                                 k: int = None):
   list_last_next_mental_state = []
-  for i_e in range(num_samples):
-    # TODO: index expert_traj taking the i_e indices not from an 
-    # ordered range but from the indices of the selected mental arrays in 
-    # the previous step
-    last_next_state = expert_traj["next_states"][i_e][-1]
-    last_mental_state = list_mental_states[i_e][-1]
-
+  for mental_idx, traj_idx in enumerate(list_mental_states_idx):
+    last_next_state = expert_traj["next_states"][traj_idx][-1]
+    last_mental_state = list_mental_states[mental_idx][-1]
 
     last_next_mental_state = agent.choose_mental_state(last_next_state,
                                                        last_mental_state, False)
@@ -274,12 +279,14 @@ def train(config: omegaconf.DictConfig,
         if (expert_data is None
             or explore_steps % config.demo_latent_infer_interval == 0):
           # infer mental states for unlabeled slots in trajectories 
-          mental_states = infer_mental_states_all_demo(
+          mental_states, mental_states_idx = infer_mental_states_all_demo(
               agent, expert_dataset.trajectories, traj_labels,
               config.entropy_scoring, config.k) # entropy scoring configuration
           
           mental_states_after_end = infer_last_next_mental_state(
-              agent, expert_dataset.trajectories, mental_states,
+              agent, expert_dataset.trajectories,
+              list_mental_states=mental_states,
+              list_mental_states_idx=mental_states_idx,
               k=config.k)
           
           exb = get_expert_batch(
@@ -288,6 +295,7 @@ def train(config: omegaconf.DictConfig,
               agent.device,
               agent.PREV_LATENT,
               agent.PREV_ACTION,
+              mental_states_idx=mental_states_idx,
               mental_states_after_end=mental_states_after_end)
           expert_data = (exb["prev_latents"], exb["prev_actions"],
                          exb["states"], exb["latents"], exb["actions"],
