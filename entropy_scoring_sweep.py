@@ -1,9 +1,10 @@
 import subprocess
 import argparse
 from ulid import ULID
+import numpy as np
 
 COMMAND_STR_TEMPLATE = '''
-python idil_train/run_algs.py alg={alg} base={base} env={env} seed=0 supervision=0.0 k={kval} entropy_scoring=true tag='{env_type}-es-{kval_label}-{job_id}'
+python idil_train/run_algs.py alg={alg} base={base} env={env} seed={seed} supervision=0.0 k={kval} entropy_scoring=true tag='{env_type}-es-{kval_label}-{job_id}'
 '''
 
 if __name__ == "__main__":
@@ -28,6 +29,9 @@ if __name__ == "__main__":
 
     print(f"Gotten sweep Ks: {sweep_k_list}")
 
+    # assign a random seed
+    seed = np.random.randint(1, 100000)
+
     for sweep_k in sweep_k_list:
         for trial_id in range(args.num_trials):
             job_id = ULID()
@@ -35,7 +39,8 @@ if __name__ == "__main__":
             k_label = str(int(float(sweep_k) * 100))
             command_str = COMMAND_STR_TEMPLATE.format(alg=args.alg,
                                                     base=args.base,
-                                                    env=args.env, 
+                                                    env=args.env,
+                                                    seed=seed, 
                                                     env_type=env_type,
                                                     kval=sweep_k, 
                                                     kval_label=k_label,
