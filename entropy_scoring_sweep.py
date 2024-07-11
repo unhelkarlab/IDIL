@@ -13,7 +13,7 @@ if __name__ == "__main__":
                         help="Sweep values for entropy top-K selection, separated by ';'")
     parser.add_argument("--num_trials", type=int, default=1, required=False,
                         help="Number of trials to run for each K value")
-    parser.add_argument("--supervision", type=float, default=0.0, required=False,
+    parser.add_argument("--supervision", type=float, default=0.5, required=False,
                         help="Proportion of labels to be used in the expert dataset")
     parser.add_argument("--discrete_env", type=bool, default=True, required=False,
                         help="Whether to use discrete environment")
