@@ -4,7 +4,7 @@ from ulid import ULID
 import numpy as np
 
 COMMAND_STR_TEMPLATE = '''
-python idil_train/run_algs.py alg={alg} base={base} env={env} seed={seed} supervision={supervision} k={kval} entropy_scoring=true tag='{env_type}-es-{kval_label}-{job_id}'
+python idil_train/run_algs.py alg={alg} base={base} env={env} seed={seed} supervision={supervision} k={kval} entropy_scoring=true tag='es-{kval_label}-{job_id}'
 '''
 
 if __name__ == "__main__":
