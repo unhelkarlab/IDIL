@@ -62,4 +62,6 @@ nohup python idil_train/run_algs.py alg=idil base=boxpush_base env=CleanupSingle
 nohup python idil_train/run_algs.py alg=idil base=MultiGoals2D_base env=MultiGoals2D_3-v0 supervision=0.0 k=0.6 entropy_scoring=true tag='cont-es-60'&
 
 # sweep k-values list
-nohup python entropy_scoring_sweep.py --k_values='0.2;0.4;0.6' &
+nohup python entropy_scoring_sweep.py --sweep_k='0.2;0.4;0.6' --num_trials=5&
+# sweep k-values list (continuous env)
+nohup python entropy_scoring_sweep.py --sweep_k='0.2;0.4;0.6' --base=MultiGoals2D_base --env=MultiGoals2D_3-v0 --discrete_env=false --num_trials=5 &
