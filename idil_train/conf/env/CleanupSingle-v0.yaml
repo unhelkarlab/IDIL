@@ -6,5 +6,5 @@ defaults:
 env_name: CleanupSingle-v0
 data_path: experts/CleanupSingle-v0_100.pkl
 
-n_traj: 50
+n_traj: 100 # original paper used n_traj = 50
 dim_c: 4
