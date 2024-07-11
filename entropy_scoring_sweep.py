@@ -4,7 +4,7 @@ from ulid import ULID
 import numpy as np
 
 COMMAND_STR_TEMPLATE = '''
-python idil_train/run_algs.py alg={alg} base={base} env={env} seed={seed} supervision=0.0 k={kval} entropy_scoring=true tag='{env_type}-es-{kval_label}-{job_id}'
+python idil_train/run_algs.py alg={alg} base={base} env={env} seed={seed} supervision={supervision} k={kval} entropy_scoring=true tag='{env_type}-es-{kval_label}-{job_id}'
 '''
 
 if __name__ == "__main__":
@@ -13,6 +13,8 @@ if __name__ == "__main__":
                         help="Sweep values for entropy top-K selection, separated by ';'")
     parser.add_argument("--num_trials", type=int, default=1, required=False,
                         help="Number of trials to run for each K value")
+    parser.add_argument("--supervision", type=float, default=0.0, required=False,
+                        help="Proportion of labels to be used in the expert dataset")
     parser.add_argument("--discrete_env", type=bool, default=True, required=False,
                         help="Whether to use discrete environment")
     parser.add_argument("--alg", type=str, default="idil", required=False,
@@ -29,18 +31,20 @@ if __name__ == "__main__":
 
     print(f"Gotten sweep Ks: {sweep_k_list}")
 
-    # assign a random seed
-    seed = np.random.randint(1, 100000)
 
     for sweep_k in sweep_k_list:
         for trial_id in range(args.num_trials):
             job_id = ULID()
+
+            # assign a random seed for each job
+            seed = np.random.randint(1, 100000)
             
             k_label = str(int(float(sweep_k) * 100))
             command_str = COMMAND_STR_TEMPLATE.format(alg=args.alg,
                                                     base=args.base,
                                                     env=args.env,
                                                     seed=seed, 
+                                                    supervision=args.supervision,
                                                     env_type=env_type,
                                                     kval=sweep_k, 
                                                     kval_label=k_label,
