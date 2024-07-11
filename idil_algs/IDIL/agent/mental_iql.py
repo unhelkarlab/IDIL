@@ -57,12 +57,6 @@ class MentalIQL:
                                    discrete_obs, SimpleOptionQNetwork,
                                    self._get_tx_iq_vars)
 
-
-    # NOTE: this entire block defines the action policy model initialization
-    # note that I have to use a SAC model for continuous environments
-    # NOTE: this pi agent represents the learned action policy
-    # To use the expert action policy, I'll have to replace this
-    # intialization with the expert action policy.
     if fixed_pi:
       # Initialize pi_agent as the expert dataset policy
       assert expert_dataset is not None, "Expert policy must be provided if fixing pi"
@@ -152,9 +146,6 @@ class MentalIQL:
 
     self.internal_step += 1
 
-    # NOTE: self.pi_update updates the action policy model's weights. I'll
-    # have to comment this out to keep the expert policy fixed.
-    # fn_update_1, fn_update_2 = self.tx_update, self.pi_update
     fn_update_1 = self.tx_update
     loss_1 = fn_update_1(policy_batch, expert_batch, logger, step)
 
