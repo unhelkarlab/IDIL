@@ -13,7 +13,7 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_3-v0", "supervision=0.0",
+                "env=MultiGoals2D_3-v0", "supervision=0.5",
                 "seed=0",
                 "tag=debug"
             ]
@@ -27,7 +27,7 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=0.0",
+                "env=CleanupSingle-v0", "supervision=0.5",
                 "seed=0",
                 "tag=debug_disc-vanilla"
             ]
@@ -41,7 +41,7 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=0.0",
+                "env=CleanupSingle-v0", "supervision=0.5",
                 "seed=0",
                 "entropy_scoring=true", "k=30",
                 "tag=debug_disc-entropy_scoring"
@@ -56,7 +56,7 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=0.0",
+                "env=CleanupSingle-v0", "supervision=0.5",
                 "seed=0" , "fixed_pi=true",
                 "tag=debug_disc-fep"
             ]
@@ -70,7 +70,7 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_3-v0", "supervision=0.0",
+                "env=MultiGoals2D_3-v0", "supervision=0.5",
                 "seed=0", "fixed_pi=false", "tag=debug_cont-vanilla"
             ]
         },        
@@ -83,7 +83,7 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_3-v0", "supervision=0.0",
+                "env=MultiGoals2D_3-v0", "supervision=0.5",
                 "seed=0", "fixed_pi=true", "tag=debug_cont-fep"
             ]
         },
