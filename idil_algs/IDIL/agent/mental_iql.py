@@ -164,7 +164,6 @@ class MentalIQL:
     return option, action
 
   def choose_policy_action(self, state, option, sample=False):
-    # NOTE: the discrete expert policy sampler overrides this same function
     return self.pi_agent.choose_action(state, option, sample)
 
   def choose_mental_state(self, state, prev_option, sample=False):
