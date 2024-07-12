@@ -17,9 +17,11 @@ Please refer to the `readme.md` file in the `idil_train/` folder.
 ## Citation
 ```
 @inproceedings{seo2024idil,
-  title={IDIL: Imitation Learning of Intent-Driven Expert Behavior},
-  author={Seo, Sangwon and Unhelkar, Vaibhav},
-  booktitle={International Conference on Autonomous Agents and Multi-Agent Systems (AAMAS). IFAAMAS},
-  year={2024}
+  author = {Seo, Sangwon and Unhelkar, Vaibhav},
+  title = {IDIL: Imitation Learning of Intent-Driven Expert Behavior},
+  year = {2024},
+  booktitle = {Proceedings of the 23rd International Conference on Autonomous Agents and Multiagent Systems},
+  publisher = {International Foundation for Autonomous Agents and Multiagent Systems},
+  pages = {1673–1682}
 }
 ```
