@@ -4,7 +4,7 @@ from ulid import ULID
 import numpy as np
 
 COMMAND_STR_TEMPLATE = '''
-python idil_train/run_algs.py alg={alg} base={base} env={env} seed={seed} supervision={supervision} k={kval} entropy_scoring=true tag='es-{kval_label}-{job_id}'
+python idil_train/run_algs.py alg={alg} base={base} env={env} seed={seed} supervision={supervision} k={kval} entropy_scoring=true tag='{tag}'
 '''
 
 if __name__ == "__main__":
@@ -23,6 +23,8 @@ if __name__ == "__main__":
                         help="Base directory for the experiment")
     parser.add_argument("--env", type=str, default="CleanupSingle-v0", required=False,
                         help="Environment to run the algorithm on")
+    parser.add_argument("--custom_tag", type=str, required=False,
+                        help="Custom tag for the experiment, appended to the standard ID")
     
     args = parser.parse_args()
     sweep_k_list = args.sweep_k.split(";")
@@ -40,6 +42,13 @@ if __name__ == "__main__":
             seed = np.random.randint(1, 100000)
             
             k_label = str(int(float(sweep_k) * 100))
+
+            # create job tag
+            
+            tag = f'es-{k_label}-{job_id}'
+            if args.custom_tag:
+                tag = f'{tag}-{args.custom_tag}'
+
             command_str = COMMAND_STR_TEMPLATE.format(alg=args.alg,
                                                     base=args.base,
                                                     env=args.env,
@@ -47,8 +56,7 @@ if __name__ == "__main__":
                                                     supervision=args.supervision,
                                                     env_type=env_type,
                                                     kval=sweep_k, 
-                                                    kval_label=k_label,
-                                                    job_id=str(job_id))
+                                                    tag=tag)
             
             print(f"\n\nRunning command: {command_str}\n\n")
             subprocess.run(command_str, shell=True)

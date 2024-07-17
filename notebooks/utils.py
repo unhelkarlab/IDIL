@@ -9,12 +9,12 @@ import gym
 RESULTS_PATH="./idil_train/result/"
 
 
-def get_run_path(env_name: str, run_id: str, results_path=RESULTS_PATH):
+def get_run_path(env_name: str, run_id: str, results_path=RESULTS_PATH, alg_name='idil'):
     """
     Get the path where we store 'model' and 'log' data for a given run
     """
     # read one dir below, as there is always a date directory
-    _path = os.path.join(results_path, env_name, 'idil', run_id)
+    _path = os.path.join(results_path, env_name, alg_name, run_id)
     _date_folder = os.listdir(_path)[0]
     return os.path.join(_path, _date_folder)
 
