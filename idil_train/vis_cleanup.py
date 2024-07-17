@@ -8,6 +8,7 @@ from hcair_domains.box_push import (BoxState, conv_box_state_2_idx,
                                     conv_box_idx_2_state)
 import imageio
 from ulid import ULID
+import argparse
 
 def load_trajectories(file_path: str):
   with open(file_path, "rb") as f:
@@ -114,10 +115,16 @@ def plot_trajectory(screen: pygame.Surface, env: CleanupSingleEnv_v0, states: li
 
 
 if __name__ == "__main__":
-  cur_dir = os.path.dirname(__file__)
-  file_path = os.path.join(cur_dir, "experts/CleanupSingle-v0_100.pkl")
 
-  trajectories = load_trajectories(file_path)
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--file_path", type=str, default="test_data/sample_trajs.pkl")
+  parser.add_argument("--preffix", type=str, default="TRAJ")
+  args = parser.parse_args()
+  
+  # cur_dir = os.path.dirname(__file__)
+  # file_path = os.path.join(cur_dir, "test_data/sample_trajs.pkl")
+
+  trajectories = load_trajectories(args.file_path)
   env = CleanupSingleEnv_v0()
 
   pygame.init()
@@ -139,4 +146,9 @@ if __name__ == "__main__":
   states = trajectories["states"][traj_idx]
   len_traj = len(states)
 
-  plot_trajectory(screen, env, states, traj_id=f"TRAJ_{str(traj_idx)}")
+  plot_trajectory(screen, env, states, traj_id=f"{args.preffix}_{str(traj_idx)}")
+
+  # clean the tmp directory after the gif is created
+  for fname in os.listdir(TMP_DIR):
+    os.remove(os.path.join(TMP_DIR, fname))
+    
