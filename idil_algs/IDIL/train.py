@@ -1,5 +1,6 @@
 import os
 import random
+from typing import List
 import numpy as np
 import torch
 from itertools import count
@@ -43,29 +44,62 @@ def load_expert_data_w_labels(demo_path, num_trajs, n_labeled, seed):
   return expert_dataset, traj_labels, cnt_label
 
 
-def infer_mental_states_all_demo(agent: MentalIQL, expert_traj, traj_labels):
+def infer_mental_states_all_demo(agent: MentalIQL,
+                                 expert_traj, 
+                                 traj_labels,
+                                 entropy_scoring: bool = False,
+                                 k: float = 1.0):
   num_samples = len(expert_traj["states"])
   list_mental_states = []
+  list_mental_states_idx = []
+  inferred_mental_arrays = []
+
   for i_e in range(num_samples):
     if traj_labels[i_e] is None:
-      expert_states = expert_traj["states"][i_e]
-      expert_actions = expert_traj["actions"][i_e]
-      mental_array, _ = agent.infer_mental_states(expert_states, expert_actions)
+      expert_states = expert_traj["states"][i_e] # list of len expert_traj['lengths'][i_e]
+      expert_actions = expert_traj["actions"][i_e] # list of len expert_traj['lengths'][i_e]
+      
+      # if expert intents are not available, we can infer them
+      # using the intent policy model
+      mental_array, _, entropy = agent.infer_mental_states(expert_states, expert_actions)
+      inferred_mental_arrays.append((mental_array, i_e, entropy))
+
     else:
+      # if expert intents are available, use them
       mental_array = traj_labels[i_e]
+      # only append mental array if labels are available
+      list_mental_states.append(mental_array)
+      list_mental_states_idx.append(i_e)
 
-    list_mental_states.append(mental_array)
 
-  return list_mental_states
+  if entropy_scoring and k:
+    # sort the inferred mental arrays by entropy, in descending entropy order
+    inferred_mental_arrays = sorted(inferred_mental_arrays,
+                                    key=lambda x: x[2],
+                                    reverse=True)
+    # select the top k mental arrays
+    # _k = min(k, len(inferred_mental_arrays))
+    _k = int(k * len(inferred_mental_arrays))
+    inferred_mental_arrays = inferred_mental_arrays[:_k]
+
+  _extend_mental_array = [mental_array for mental_array, _, _ in inferred_mental_arrays]
+  _extend_mental_array_idx = [i_e for _, i_e, _ in inferred_mental_arrays]
+
+  list_mental_states.extend(_extend_mental_array)
+  list_mental_states_idx.extend(_extend_mental_array_idx)
+
+  return list_mental_states, list_mental_states_idx
 
 
 def infer_last_next_mental_state(agent: MentalIQL, expert_traj,
-                                 list_mental_states):
-  num_samples = len(expert_traj["states"])
+                                 list_mental_states,
+                                 list_mental_states_idx: List[int],
+                                 k: int = None):
   list_last_next_mental_state = []
-  for i_e in range(num_samples):
-    last_next_state = expert_traj["next_states"][i_e][-1]
-    last_mental_state = list_mental_states[i_e][-1]
+  for mental_idx, traj_idx in enumerate(list_mental_states_idx):
+    last_next_state = expert_traj["next_states"][traj_idx][-1]
+    last_mental_state = list_mental_states[mental_idx][-1]
+
     last_next_mental_state = agent.choose_mental_state(last_next_state,
                                                        last_mental_state, False)
     list_last_next_mental_state.append(last_next_mental_state)
@@ -186,11 +220,8 @@ def train(config: omegaconf.DictConfig,
 
     for episode_step in count():
       with eval_mode(agent):
-        # NOTE: sampling action from policy, use action to infer next state and then latent
+        # sampling action from policy, use action to infer next state and then latent
         # this action will be added to the replay buffer
-        # if hasattr(agent, "fixed_pi") and agent.fixed_pi:
-        #   action = expert_policy.choose_action(state, latent)
-        # else:
         action = agent.choose_policy_action(state, latent, sample=True)
 
         next_state, reward, done, info = env.step(action)
@@ -248,16 +279,24 @@ def train(config: omegaconf.DictConfig,
         # infer mental states of expert data
         if (expert_data is None
             or explore_steps % config.demo_latent_infer_interval == 0):
-          mental_states = infer_mental_states_all_demo(
-              agent, expert_dataset.trajectories, traj_labels)
+          # infer mental states for unlabeled slots in trajectories 
+          mental_states, mental_states_idx = infer_mental_states_all_demo(
+              agent, expert_dataset.trajectories, traj_labels,
+              config.entropy_scoring, config.k) # entropy scoring configuration
+          
           mental_states_after_end = infer_last_next_mental_state(
-              agent, expert_dataset.trajectories, mental_states)
+              agent, expert_dataset.trajectories,
+              list_mental_states=mental_states,
+              list_mental_states_idx=mental_states_idx,
+              k=config.k)
+          
           exb = get_expert_batch(
               expert_dataset.trajectories,
               mental_states,
               agent.device,
               agent.PREV_LATENT,
               agent.PREV_ACTION,
+              mental_states_idx=mental_states_idx,
               mental_states_after_end=mental_states_after_end)
           expert_data = (exb["prev_latents"], exb["prev_actions"],
                          exb["states"], exb["latents"], exb["actions"],
@@ -271,7 +310,7 @@ def train(config: omegaconf.DictConfig,
           policy_batch = online_memory_replay.get_samples(
               batch_size, agent.device)
           
-          # NOTE: expert batch is the expert distribution
+          # expert batch is the expert distribution
           expert_batch = get_samples(batch_size, expert_data)
 
           tx_losses, pi_losses = agent.miql_update(

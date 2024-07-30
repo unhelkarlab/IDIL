@@ -1,4 +1,4 @@
-from typing import Callable, Any, Sequence
+from typing import Callable, Any, List, Sequence
 from collections import defaultdict
 import os
 import torch
@@ -110,6 +110,7 @@ def get_expert_batch(expert_traj,
                      device,
                      init_latent,
                      init_action,
+                     mental_states_idx: List[int]=None,
                      mental_states_after_end=None):
   '''
   return: dictionary with these keys: states, prev_latents, prev_actions, 
@@ -134,35 +135,41 @@ def get_expert_batch(expert_traj,
   if mental_states_after_end is not None:
     dict_batch['next_latents'] = []
 
-  for i_e in range(num_samples):
-    length = len(expert_traj["rewards"][i_e])
+
+  if mental_states_idx is not None:
+    _iterator = zip(range(len(mental_states_idx)), mental_states_idx)
+  else:
+    _iterator = zip(range(num_samples), range(num_samples))
+
+  for ms_idx, traj_idx in _iterator:
+    length = len(expert_traj["rewards"][traj_idx])
 
     dict_batch['states'].append(
-        np.array(expert_traj["states"][i_e]).reshape(length, -1))
+        np.array(expert_traj["states"][traj_idx]).reshape(length, -1))
 
     dict_batch['prev_latents'].append(init_latent)
     dict_batch['prev_latents'].append(
-        np.array(mental_states[i_e][:-1]).reshape(-1, 1))
+        np.array(mental_states[ms_idx][:-1]).reshape(-1, 1))
 
     dict_batch['prev_actions'].append(init_action)
     dict_batch['prev_actions'].append(
-        np.array(expert_traj["actions"][i_e][:-1]).reshape(-1, action_dim))
+        np.array(expert_traj["actions"][traj_idx][:-1]).reshape(-1, action_dim))
 
     dict_batch['next_states'].append(
-        np.array(expert_traj["next_states"][i_e]).reshape(length, -1))
-    dict_batch['latents'].append(np.array(mental_states[i_e]).reshape(-1, 1))
+        np.array(expert_traj["next_states"][traj_idx]).reshape(length, -1))
+    dict_batch['latents'].append(np.array(mental_states[ms_idx]).reshape(-1, 1))
     dict_batch['actions'].append(
-        np.array(expert_traj["actions"][i_e]).reshape(-1, action_dim))
+        np.array(expert_traj["actions"][traj_idx]).reshape(-1, action_dim))
     dict_batch['rewards'].append(
-        np.array(expert_traj["rewards"][i_e]).reshape(-1, 1))
+        np.array(expert_traj["rewards"][traj_idx]).reshape(-1, 1))
     dict_batch['dones'].append(
-        np.array(expert_traj["dones"][i_e]).reshape(-1, 1))
+        np.array(expert_traj["dones"][traj_idx]).reshape(-1, 1))
 
     if mental_states_after_end is not None:
       dict_batch["next_latents"].append(
-          np.array(mental_states[i_e][1:]).reshape(-1, 1))
+          np.array(mental_states[ms_idx][1:]).reshape(-1, 1))
       dict_batch["next_latents"].append(
-          np.array(mental_states_after_end[i_e]).reshape(-1))
+          np.array(mental_states_after_end[ms_idx]).reshape(-1))
 
   for key, val in dict_batch.items():
     tmp = np.vstack(val)

@@ -1,11 +1,14 @@
 import os
 import pickle
 import pygame
+from tqdm import tqdm
 from idil_gym.envs.cleanup_single import CleanupSingleEnv_v0
 from hcair_domains.cleanup_single.mdp import MDPCleanupSingle
 from hcair_domains.box_push import (BoxState, conv_box_state_2_idx,
                                     conv_box_idx_2_state)
-
+import imageio
+from ulid import ULID
+import argparse
 
 def load_trajectories(file_path: str):
   with open(file_path, "rb") as f:
@@ -13,7 +16,12 @@ def load_trajectories(file_path: str):
   return data
 
 
-def render_state(screen: pygame.Surface, env: CleanupSingleEnv_v0, state: int):
+VISUALS_DIR = os.path.join("idil_train", "visuals")
+TMP_DIR = os.path.join(VISUALS_DIR, "tmp")
+os.makedirs(TMP_DIR, exist_ok=True)
+
+def render_state(screen: pygame.Surface, env: CleanupSingleEnv_v0, 
+                 state: int, tmp_dir : str= TMP_DIR, frame_idx: int = 0):
   mdp = env.mdp  # type: MDPCleanupSingle
   box_states, agent_pos = mdp.conv_mdp_sidx_to_sim_states(state)
 
@@ -82,12 +90,41 @@ def render_state(screen: pygame.Surface, env: CleanupSingleEnv_v0, state: int):
 
   pygame.display.update()
 
+  # save image of the current surface
+  pygame.image.save(pygame.display.get_surface(), os.path.join(tmp_dir, f"state-{frame_idx}.png"))
+
+
+def plot_trajectory(screen: pygame.Surface, env: CleanupSingleEnv_v0, states: list, traj_id: str= None):
+  
+  print("Generating state renders...\n")
+  for idx, state in tqdm(enumerate(states)):
+    render_state(screen, env, state=state, frame_idx=idx)
+    pygame.time.wait(500)
+  print("Generated successfully.\n")
+  print("Creating gif...\n")
+  # read all images in the tmp directory and create a gif
+  frames = []
+  for i in tqdm(range(len(states))):
+    img_path = os.path.join(TMP_DIR, f"state-{i}.png")
+    frames.append(imageio.imread(img_path))
+
+  _id = str(ULID()) if not traj_id else traj_id
+  imageio.mimsave(os.path.join(VISUALS_DIR, f"trajectory-{_id}.gif"), frames, duration=0.5)
+
+  print("Saved successfully.")
+
 
 if __name__ == "__main__":
-  cur_dir = os.path.dirname(__file__)
-  file_path = os.path.join(cur_dir, "experts/CleanupSingle-v0_100.pkl")
 
-  trajectories = load_trajectories(file_path)
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--file_path", type=str, default="test_data/sample_trajs.pkl")
+  parser.add_argument("--preffix", type=str, default="TRAJ")
+  args = parser.parse_args()
+  
+  # cur_dir = os.path.dirname(__file__)
+  # file_path = os.path.join(cur_dir, "test_data/sample_trajs.pkl")
+
+  trajectories = load_trajectories(args.file_path)
   env = CleanupSingleEnv_v0()
 
   pygame.init()
@@ -109,16 +146,9 @@ if __name__ == "__main__":
   states = trajectories["states"][traj_idx]
   len_traj = len(states)
 
-  while True:
-    timestep = input(f"Enter timestep (0 ~ {len_traj - 1}): ")
-    if not timestep.isnumeric():
-      print("Invalid input")
-      continue
-    else:
-      timestep = int(timestep)
-      if timestep < 0 or timestep >= len_traj:
-        print("Out of the range")
-        continue
+  plot_trajectory(screen, env, states, traj_id=f"{args.preffix}_{str(traj_idx)}")
 
-    state = states[timestep]
-    render_state(screen, env, state)
+  # clean the tmp directory after the gif is created
+  for fname in os.listdir(TMP_DIR):
+    os.remove(os.path.join(TMP_DIR, fname))
+    

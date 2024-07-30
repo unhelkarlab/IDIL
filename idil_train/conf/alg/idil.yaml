@@ -9,7 +9,7 @@ miql_tx_optimizer_lr_critic: 3.e-4
 miql_tx_method_loss: value
 miql_tx_method_regularize: False
 miql_tx_method_div: chi
-miql_tx_init_temp: 1e-4
+miql_tx_init_temp: 1.0e-4
 miql_tx_clip_grad_val: null
 miql_tx_num_actor_update: 1
 miql_tx_num_critic_update: 1
@@ -35,5 +35,5 @@ miql_pi_use_nn_logstd: True
 miql_pi_clamp_action_logstd: False # True: use clamp() / False: use tanh
 # pi - alpha
 miql_pi_optimizer_lr_alpha: 3.e-4
-miql_pi_init_temp: 1e-2
+miql_pi_init_temp: 1.0e-2
 miql_pi_learn_temp: True

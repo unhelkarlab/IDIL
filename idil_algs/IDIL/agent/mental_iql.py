@@ -57,12 +57,6 @@ class MentalIQL:
                                    discrete_obs, SimpleOptionQNetwork,
                                    self._get_tx_iq_vars)
 
-
-    # NOTE: this entire block defines the action policy model initialization
-    # note that I have to use a SAC model for continuous environments
-    # NOTE: this pi agent represents the learned action policy
-    # To use the expert action policy, I'll have to replace this
-    # intialization with the expert action policy.
     if fixed_pi:
       # Initialize pi_agent as the expert dataset policy
       assert expert_dataset is not None, "Expert policy must be provided if fixing pi"
@@ -152,9 +146,6 @@ class MentalIQL:
 
     self.internal_step += 1
 
-    # NOTE: self.pi_update updates the action policy model's weights. I'll
-    # have to comment this out to keep the expert policy fixed.
-    # fn_update_1, fn_update_2 = self.tx_update, self.pi_update
     fn_update_1 = self.tx_update
     loss_1 = fn_update_1(policy_batch, expert_batch, logger, step)
 
@@ -173,7 +164,6 @@ class MentalIQL:
     return option, action
 
   def choose_policy_action(self, state, option, sample=False):
-    # NOTE: the discrete expert policy sampler overrides this same function
     return self.pi_agent.choose_action(state, option, sample)
 
   def choose_mental_state(self, state, prev_option, sample=False):
@@ -196,9 +186,14 @@ class MentalIQL:
     with torch.no_grad():
       log_pis = self.pi_agent.log_probs(state, action).view(
           -1, 1, self.lat_dim)  # len_demo x 1 x ct
+      # log_trs is the prob of transitioning from ct_1 to ct at a given t (one extra dimension for the staring state, c_#)
       log_trs = self.tx_agent.log_probs(state, None)  # len_demo x (ct_1+1) x ct (ct is the latent at a given t)
       log_prob = log_trs[:, :-1] + log_pis
       log_prob0 = log_trs[0, -1] + log_pis[0, 0]
+
+      # intialize step-wise log prob array to compute entropy
+      traj_entropy = -torch.sum(torch.exp(log_trs) * log_trs)
+      
       # forward
       max_path = torch.empty(len_demo,
                              self.lat_dim,
@@ -209,13 +204,21 @@ class MentalIQL:
       for i in range(1, len_demo):
         accumulate_logp, max_path[i, :] = (accumulate_logp.unsqueeze(dim=-1) +
                                            log_prob[i]).max(dim=-2)
+
       # backward
       c_array = torch.zeros(len_demo + 1,
                             1,
                             dtype=torch.long,
                             device=self.device)
       log_prob_traj, c_array[-1] = accumulate_logp.max(dim=-1)
+      individual_log_probs = torch.zeros(len_demo, device=self.device)  # To store log probabilities of each selected state
+
       for i in range(len_demo, 0, -1):
-        c_array[i - 1] = max_path[i - 1][c_array[i]]
+        # c_array[i - 1] = max_path[i - 1][c_array[i]]
+        selected_state = c_array[i]
+        c_array[i - 1] = max_path[i - 1][selected_state]
+
     return (c_array[1:].detach().cpu().numpy(),
-            log_prob_traj.detach().cpu().numpy())
+            log_prob_traj.detach().cpu().numpy(),
+            traj_entropy
+            )

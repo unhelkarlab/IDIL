@@ -13,8 +13,23 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_3-v0", "supervision=0.0",
+                "env=MultiGoals2D_3-v0", "supervision=0.5",
                 "seed=0",
+                "tag=debug"
+            ]
+        },
+        {
+            "name": "Debug with MultiGoals 5",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=MultiGoals2D_base",
+                "env=MultiGoals2D_5-v0", "supervision=0.5",
+                "seed=0",
+                "n_traj=500", "entropy_scoring=true", "k=0.2",
                 "tag=debug"
             ]
         },
@@ -27,9 +42,24 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=0.0",
+                "env=CleanupSingle-v0", "supervision=0.5",
                 "seed=0",
-                "tag=debug-disc-vanilla"
+                "tag=debug_disc-vanilla"
+            ]
+        },
+        {
+            "name": "Debug Discrete Entropy Scoring",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=boxpush_base",
+                "env=CleanupSingle-v0", "supervision=0.5",
+                "seed=0",
+                "entropy_scoring=true", "k=0.3",
+                "tag=debug_disc-entropy_scoring"
             ]
         },
         {
@@ -41,9 +71,9 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=0.0",
+                "env=CleanupSingle-v0", "supervision=0.5",
                 "seed=0" , "fixed_pi=true",
-                "tag=debug-disc-fep"
+                "tag=debug_disc-fep"
             ]
         },
         {
@@ -55,8 +85,8 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_3-v0", "supervision=0.0",
-                "seed=0", "fixed_pi=false", "tag=debug-cont-vanilla"
+                "env=MultiGoals2D_3-v0", "supervision=0.5",
+                "seed=0", "fixed_pi=false", "tag=debug_cont-vanilla"
             ]
         },        
         {
@@ -68,8 +98,8 @@
             "justMyCode": false,
             "args": [
                 "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_3-v0", "supervision=0.0",
-                "seed=0", "fixed_pi=true", "tag=debug-cont-fep"
+                "env=MultiGoals2D_3-v0", "supervision=0.5",
+                "seed=0", "fixed_pi=true", "tag=debug_cont-fep"
             ]
         },
         

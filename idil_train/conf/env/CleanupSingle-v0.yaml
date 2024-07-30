@@ -4,7 +4,8 @@ defaults:
   - boxpush_common
 
 env_name: CleanupSingle-v0
-data_path: experts/CleanupSingle-v0_100.pkl
+# data_path: experts/CleanupSingle-v0_100.pkl
+data_path: experts/CleanupSingle-v0_100_train70.pkl
 
-n_traj: 50
+n_traj: 70 # original paper used n_traj = 50
 dim_c: 4

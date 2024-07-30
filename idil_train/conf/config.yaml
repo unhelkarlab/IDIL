@@ -29,3 +29,7 @@ defaults:
 
 # fixed pi approach
 fixed_pi: false
+
+# entropy scoring
+entropy_scoring: false
+k: 0.25 # percentage of inferred mental arrays to train on on each episode

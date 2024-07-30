@@ -10,4 +10,6 @@ idil_train/result/
 gym.monitor.csv
 nohup.out
 
+idil_train/visuals/
+
 *.pyc
