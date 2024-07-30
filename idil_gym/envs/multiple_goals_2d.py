@@ -6,7 +6,7 @@ from gym import spaces
 import cv2
 import numpy as np
 from PIL import Image
-
+import argparse
 
 def read_transparent_png(filename):
   # ref: https://stackoverflow.com/a/41896175
@@ -276,8 +276,20 @@ def generate_data(save_dir, env_name, n_traj, render=False, render_delay=10):
 
 
 if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--save_dir", type=str, default=None)
+  parser.add_argument("--num_goals", type=int, default=3)
+  parser.add_argument("--n_traj", type=int, default=10)
+  parser.add_argument("--render", action="store_true")
+
+  args = parser.parse_args()
+
+  ENV_NAME = "MultiGoals2D_{num_goals}-v0".format(num_goals=args.num_goals)
   cur_dir = os.path.dirname(__file__)
+  SAVE_DIR = os.path.join(cur_dir, args.save_dir) if args.save_dir is not None else None 
+  
 
   # for idx in range(2, 6):
   #   traj = generate_data(cur_dir, f"MultiGoals2D_{idx}-v0", 50, False)
-  traj = generate_data(None, "MultiGoals2D_5-v0", 10, True, 10)
+  # traj = generate_data(None, "MultiGoals2D_5-v0", 10, True, 10)
+  traj = generate_data(SAVE_DIR, ENV_NAME, args.n_traj, args.render)
