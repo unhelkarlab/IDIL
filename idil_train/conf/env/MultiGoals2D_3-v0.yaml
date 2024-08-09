@@ -5,6 +5,8 @@ defaults:
 
 env_name: MultiGoals2D_3-v0
 data_path: experts/MultiGoals2D_3-v0_500.pkl
+extra_trajectories_path: idil_train/extra_trajectories/MultiGoals2D_3-v0_100.pkl
+
 dim_c: 3
 
 n_traj: 100 # using all trajectories for MultiGoals2D_3-v0, original paper kept n_traj = 50

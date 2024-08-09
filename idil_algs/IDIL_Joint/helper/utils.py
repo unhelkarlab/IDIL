@@ -188,3 +188,89 @@ def get_samples(batch_size, dataset):
     batch.append(dataset[col][indexes])
 
   return batch
+
+
+def build_expert_batch_with_topK(expert_trajectories,
+                                 extra_trajectories,
+                                 device,
+                                 init_latent,
+                                 init_action,
+                                 expert_next_latents: list,
+                                 extra_next_latents: list):
+  '''
+  given expert trajectories and extra trajectories filtered by entropy,
+  build a new batch of data for training the model.
+  This function appends existing expert trajectories to the filtered 
+  trajectories.
+
+  return: dictionary with these keys: states, prev_latents, prev_actions, 
+                                  next_states, latents, actions, rewards, dones
+  '''
+
+  dict_batch = {}
+  dict_batch['states'] = []
+  dict_batch['prev_latents'] = []
+  dict_batch['prev_actions'] = []
+  dict_batch['next_states'] = []
+  dict_batch['next_latents'] = []
+  dict_batch['latents'] = []
+  dict_batch['actions'] = []
+  dict_batch['rewards'] = []
+  dict_batch['dones'] = []
+
+  init_latent = np.array(init_latent).reshape(-1)
+  init_action = np.array(init_action).reshape(-1)
+  action_dim = len(init_action)
+
+  for idx_exp in range(len(expert_trajectories['states'])):
+
+
+    length = len(expert_trajectories["rewards"][idx_exp])
+    dict_batch['states'].append(np.array(expert_trajectories["states"][idx_exp]).reshape(length, -1))
+    
+    # include shifted previous latents
+    # create latents storage from the expert trajectories
+    # similarly, create actions storage from the expert trajectories
+    dict_batch['prev_latents'].append(init_latent)
+    dict_batch['prev_latents'].append(np.array(expert_trajectories["latents"][idx_exp][:-1]).reshape(-1, 1))
+    dict_batch['prev_actions'].append(init_action)
+    dict_batch['prev_actions'].append(np.array(expert_trajectories["actions"][idx_exp][:-1]).reshape(-1, action_dim))
+
+    # include shifted next states and latents
+    dict_batch['next_states'].append(np.array(expert_trajectories["next_states"][idx_exp]).reshape(length, -1))
+    dict_batch['next_latents'].append(np.array(expert_next_latents[idx_exp]).reshape(-1, 1))
+
+    dict_batch['latents'].append(np.array(expert_trajectories["latents"][idx_exp]).reshape(-1, 1))
+    dict_batch['actions'].append(np.array(expert_trajectories["actions"][idx_exp]).reshape(-1, action_dim))
+    dict_batch['rewards'].append(np.array(expert_trajectories["rewards"][idx_exp]).reshape(-1, 1))
+    dict_batch['dones'].append(np.array(expert_trajectories["dones"][idx_exp]).reshape(-1, 1))
+
+  for idx_extra in range(len(extra_trajectories['states'])):
+    length = len(extra_trajectories["rewards"][idx_extra])
+    dict_batch['states'].append(np.array(extra_trajectories["states"][idx_extra]).reshape(length, -1))
+
+    # include shifted previous latents
+    dict_batch['prev_latents'].append(init_latent)
+    dict_batch['prev_latents'].append(np.array(extra_trajectories["latents"][idx_extra][:-1]).reshape(-1, 1))
+    dict_batch['prev_actions'].append(init_action)
+    dict_batch['prev_actions'].append(np.array(extra_trajectories["actions"][idx_extra][:-1]).reshape(-1, action_dim))
+
+    # include shifted next states and latents
+    dict_batch['next_states'].append(np.array(extra_trajectories["next_states"][idx_extra]).reshape(length, -1))
+    dict_batch['next_latents'].append(np.array(extra_next_latents[idx_extra]).reshape(-1, 1))
+
+
+    dict_batch['latents'].append(np.array(extra_trajectories["latents"][idx_extra]).reshape(-1, 1))
+    dict_batch['actions'].append(np.array(extra_trajectories["actions"][idx_extra]).reshape(-1, action_dim))
+    dict_batch['rewards'].append(np.array(extra_trajectories["rewards"][idx_extra]).reshape(-1, 1))
+    dict_batch['dones'].append(np.array(extra_trajectories["dones"][idx_extra]).reshape(-1, 1))
+
+  # assert that the total length of the dict batch is equal to the sum of 
+  # the lengths of the expert and extra trajectories
+  assert len(dict_batch['states']) == (len(expert_trajectories['states']) + len(extra_trajectories['states']))
+
+  for key, val in dict_batch.items():
+    tmp = np.vstack(val)
+    dict_batch[key] = torch.as_tensor(tmp, dtype=torch.float, device=device)
+
+  return dict_batch

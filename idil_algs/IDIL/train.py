@@ -1,4 +1,5 @@
 import os
+import pickle
 import random
 from typing import List
 import numpy as np
@@ -12,7 +13,7 @@ from idil_algs.baselines.IQLearn.dataset.expert_dataset import (ExpertDataset)
 from idil_algs.baselines.IQLearn.utils.logger import Logger
 from idil_algs.IDIL_Joint.helper.option_memory import (OptionMemory)
 from idil_algs.IDIL_Joint.helper.utils import (get_expert_batch, evaluate, save,
-                                               get_samples)
+                                               get_samples, build_expert_batch_with_topK)
 from .agent.make_agent import MentalIQL
 from .agent.make_agent import make_miql_agent
 import wandb
@@ -43,6 +44,38 @@ def load_expert_data_w_labels(demo_path, num_trajs, n_labeled, seed):
         len(expert_dataset))
   return expert_dataset, traj_labels, cnt_label
 
+
+def get_top_k_trajectories(agent: MentalIQL,
+                           trajectories,
+                           k: float = 0.2):
+  """
+  Given input trajectories, this function computes the top-k most uncertain
+  by entropy, and returns an new object with keys matching the input trajectories object.
+  """
+  num_samples = len(trajectories["states"])
+
+  traj_entropy_tuples = []
+
+  for i_e in range(num_samples):
+    expert_states = trajectories["states"][i_e]
+    expert_actions = trajectories["actions"][i_e]
+
+    _, _, entropy = agent.infer_mental_states(expert_states, expert_actions)
+    traj_entropy_tuples.append((i_e, entropy))
+
+  # sort the inferred mental arrays by entropy, in descending entropy order
+  traj_entropy_tuples = sorted(traj_entropy_tuples,
+                                key=lambda x: x[1],
+                                reverse=True)
+  
+  # build a new object with the top-k most uncertain trajectories
+  output_trajs = {}
+  max_num_trajs = int(k * num_samples)
+  for key in trajectories.keys():
+    # NOTE: this changes the index of the trajectories
+    output_trajs[key] = [trajectories[key][i_e] for i_e, _ in traj_entropy_tuples[:max_num_trajs]]
+
+  return output_trajs
 
 def infer_mental_states_all_demo(agent: MentalIQL,
                                  expert_traj, 
@@ -105,6 +138,31 @@ def infer_last_next_mental_state(agent: MentalIQL, expert_traj,
     list_last_next_mental_state.append(last_next_mental_state)
 
   return list_last_next_mental_state
+
+
+def infer_next_latent(agent: MentalIQL, trajectories):
+  """
+  Given an object with keys including 'states' and 'latents', this function
+  infers the next-to-last intent for each trajectory in the input object.
+
+  Returns:
+    - list of lists where each inner element is the sequence of next-latents (size num_states - 1)
+    extended with the extra, next-to-last latent
+  """
+  num_samples = len(trajectories["states"])
+  list_next_latents = []
+  for i_e in range(num_samples):
+    last_next_state = trajectories["next_states"][i_e][-1]
+    latents = trajectories["latents"][i_e]
+    last_latent = latents[-1]
+
+    next_latent = agent.choose_mental_state(last_next_state, last_latent, False)
+    assert isinstance(latents, list), f"latents is not a list, but {type(latents)}"
+    next_latents = latents + [next_latent]
+
+    list_next_latents.append(next_latents)
+  
+  return list_next_latents
 
 
 def train(config: omegaconf.DictConfig,
@@ -172,10 +230,18 @@ def train(config: omegaconf.DictConfig,
 
   expert_avg, expert_std = compute_expert_return_mean(
       expert_dataset.trajectories)
+  
+  # ---- load the extra trajectories
+  with open(config.extra_trajectories_path, 'rb') as f:
+    extra_trajectories = pickle.load(f)
+  print(f"\nLoaded {len(extra_trajectories['states'])} extra trajectories with keys: {list(extra_trajectories.keys())}\n\n")
 
+  # ---- initialize wandb metrics
   wandb.run.summary["expert_avg"] = expert_avg
   wandb.run.summary["expert_std"] = expert_std
 
+
+  # ---- initialize agent, fixed pi implementation
   if config.fixed_pi:
     agent = make_miql_agent(config, env, fixed_pi=config.fixed_pi,
                             expert_dataset=expert_dataset)
@@ -280,43 +346,24 @@ def train(config: omegaconf.DictConfig,
         if (expert_data is None
             or explore_steps % config.demo_latent_infer_interval == 0):
 
-
-          # TODO: instead of inferring, I should just compute the top-k
-          # most uncertain macro trajectories and just output them as extra observations
-
           # --- here begings inference + data formatting ---
-          # infer mental states for unlabeled slots in trajectories 
-          mental_states, mental_states_idx = infer_mental_states_all_demo(
-              agent, expert_dataset.trajectories, traj_labels,
-              config.entropy_scoring, config.k) # entropy scoring configuration
+          top_k_trajectories = get_top_k_trajectories(agent, extra_trajectories, k=config.k)
+          expert_next_latents = infer_next_latent(agent, expert_dataset.trajectories)
+          extra_next_latents = infer_next_latent(agent, top_k_trajectories)
+          exb = build_expert_batch_with_topK(expert_trajectories=expert_dataset.trajectories,
+                                             extra_trajectories=top_k_trajectories,
+                                             device= agent.device,
+                                             init_latent=agent.PREV_LATENT,
+                                             init_action=agent.PREV_ACTION,
+                                             expert_next_latents=expert_next_latents,
+                                             extra_next_latents=extra_next_latents)
           
-          mental_states_after_end = infer_last_next_mental_state(
-              agent, expert_dataset.trajectories,
-              list_mental_states=mental_states,
-              list_mental_states_idx=mental_states_idx,
-              k=config.k)
-          
-          exb = get_expert_batch(
-              expert_dataset.trajectories,
-              mental_states,
-              agent.device,
-              agent.PREV_LATENT,
-              agent.PREV_ACTION,
-              mental_states_idx=mental_states_idx,
-              mental_states_after_end=mental_states_after_end)
           expert_data = (exb["prev_latents"], exb["prev_actions"],
                          exb["states"], exb["latents"], exb["actions"],
                          exb["next_states"], exb["next_latents"],
                          exb["rewards"], exb["dones"])
         # ##### end of batch sampling
 
-        # TODO: implementation of deterministic append
-        # 1. compute top-k  trajectories in the unseen "unlabeled_trajs"
-          # this replaces infer_mental_states_all_demo and infer_last_next_mental_state
-        # 2. append them to the expert data 
-          # this replaces get_expert_batch
-        # 3. accomodate the data to a suitable format
-          # this replaces the expert_data variable assignment
 
         ######
         # IQ-Learn

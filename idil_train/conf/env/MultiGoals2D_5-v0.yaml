@@ -5,4 +5,6 @@ defaults:
 
 env_name: MultiGoals2D_5-v0
 data_path: experts/MultiGoals2D_5-v0_500.pkl
+extra_trajectories_path: idil_train/extra_trajectories/MultiGoals2D_5-v0_100.pkl
+
 dim_c: 5
