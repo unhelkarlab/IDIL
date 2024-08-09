@@ -279,6 +279,12 @@ def train(config: omegaconf.DictConfig,
         # infer mental states of expert data
         if (expert_data is None
             or explore_steps % config.demo_latent_infer_interval == 0):
+
+
+          # TODO: instead of inferring, I should just compute the top-k
+          # most uncertain macro trajectories and just output them as extra observations
+
+          # --- here begings inference + data formatting ---
           # infer mental states for unlabeled slots in trajectories 
           mental_states, mental_states_idx = infer_mental_states_all_demo(
               agent, expert_dataset.trajectories, traj_labels,
@@ -302,6 +308,15 @@ def train(config: omegaconf.DictConfig,
                          exb["states"], exb["latents"], exb["actions"],
                          exb["next_states"], exb["next_latents"],
                          exb["rewards"], exb["dones"])
+        # ##### end of batch sampling
+
+        # TODO: implementation of deterministic append
+        # 1. compute top-k  trajectories in the unseen "unlabeled_trajs"
+          # this replaces infer_mental_states_all_demo and infer_last_next_mental_state
+        # 2. append them to the expert data 
+          # this replaces get_expert_batch
+        # 3. accomodate the data to a suitable format
+          # this replaces the expert_data variable assignment
 
         ######
         # IQ-Learn
