@@ -15,7 +15,8 @@
                 "alg=idil", "base=MultiGoals2D_base",
                 "env=MultiGoals2D_3-v0", "supervision=1.0",
                 "seed=0",
-                "tag=debug"
+                "tag=debug",
+                "device=cpu"
             ]
         },
         {
@@ -30,7 +31,8 @@
                 "env=MultiGoals2D_5-v0", "supervision=1.0",
                 "seed=0",
                 "n_traj=500", "entropy_scoring=true", "k=0.2",
-                "tag=debug"
+                "tag=debug",
+                "device=cpu"
             ]
         },
         {
@@ -44,7 +46,8 @@
                 "alg=idil", "base=boxpush_base",
                 "env=CleanupSingle-v0", "supervision=1.0",
                 "seed=0",
-                "tag=debug_disc-vanilla"
+                "tag=debug_disc-vanilla",
+                "device=cpu"
             ]
         },
         {
@@ -59,7 +62,8 @@
                 "env=CleanupSingle-v0", "supervision=1.0",
                 "seed=0",
                 "entropy_scoring=true", "k=0.3",
-                "tag=debug_disc-entropy_scoring"
+                "tag=debug_disc-entropy_scoring",
+                "device=cpu"
             ]
         },
         {
@@ -73,7 +77,43 @@
                 "alg=idil", "base=boxpush_base",
                 "env=CleanupSingle-v0", "supervision=1.0",
                 "seed=0" , "fixed_pi=true",
-                "tag=debug_disc-fep"
+                "tag=debug_disc-fep",
+                "device=cpu"
+            ]
+        },
+        {
+            "name": "Debug Discrete Entropy Scoring with FEP",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=boxpush_base",
+                "env=CleanupSingle-v0", "supervision=1.0",
+                "seed=0" , 
+                "entropy_scoring=true", "k=0.3",
+                "fixed_pi=true",
+                "tag=debug_disc-fep",
+                "device=cpu"
+            ]
+        },
+        {
+            "name": "Debug Discrete Entropy Scoring with FEP - Randomized Benchmarking",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=boxpush_base",
+                "env=CleanupSingle-v0", "supervision=1.0",
+                "seed=0" , 
+                "entropy_scoring=true", "k=0.3",
+                "randomize=true",
+                "fixed_pi=true",
+                "tag=debug_disc-fep",
+                "device=cpu"
             ]
         },
         {
@@ -86,7 +126,8 @@
             "args": [
                 "alg=idil", "base=MultiGoals2D_base",
                 "env=MultiGoals2D_3-v0", "supervision=1.0",
-                "seed=0", "fixed_pi=false", "tag=debug_cont-vanilla"
+                "seed=0", "fixed_pi=false", "tag=debug_cont-vanilla",
+                "device=cpu"
             ]
         },        
         {
@@ -99,7 +140,8 @@
             "args": [
                 "alg=idil", "base=MultiGoals2D_base",
                 "env=MultiGoals2D_3-v0", "supervision=1.0",
-                "seed=0", "fixed_pi=true", "tag=debug_cont-fep"
+                "seed=0", "fixed_pi=true", "tag=debug_cont-fep",
+                "device=cpu"
             ]
         },
         
