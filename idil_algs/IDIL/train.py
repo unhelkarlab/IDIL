@@ -47,7 +47,8 @@ def load_expert_data_w_labels(demo_path, num_trajs, n_labeled, seed):
 
 def get_top_k_trajectories(agent: MentalIQL,
                            trajectories,
-                           k: float = 0.2):
+                           k: float = 0.2,
+                           randomize=False):
   """
   Given input trajectories, this function computes the top-k most uncertain
   by entropy, and returns an new object with keys matching the input trajectories object.
@@ -64,10 +65,13 @@ def get_top_k_trajectories(agent: MentalIQL,
     traj_entropy_tuples.append((i_e, entropy))
 
   # sort the inferred mental arrays by entropy, in descending entropy order
-  traj_entropy_tuples = sorted(traj_entropy_tuples,
-                                key=lambda x: x[1],
-                                reverse=True)
-  
+  if randomize:
+    random.shuffle(traj_entropy_tuples)
+  else:
+    traj_entropy_tuples = sorted(traj_entropy_tuples,
+                                  key=lambda x: x[1],
+                                  reverse=True)
+    
   # build a new object with the top-k most uncertain trajectories
   output_trajs = {}
   max_num_trajs = int(k * num_samples)
@@ -347,7 +351,10 @@ def train(config: omegaconf.DictConfig,
             or explore_steps % config.demo_latent_infer_interval == 0):
 
           # --- here begings inference + data formatting ---
-          top_k_trajectories = get_top_k_trajectories(agent, extra_trajectories, k=config.k)
+          top_k_trajectories = get_top_k_trajectories(agent, 
+                                                      extra_trajectories, 
+                                                      k=config.k,
+                                                      randomize=config.randomize)
           expert_next_latents = infer_next_latent(agent, expert_dataset.trajectories)
           extra_next_latents = infer_next_latent(agent, top_k_trajectories)
           exb = build_expert_batch_with_topK(expert_trajectories=expert_dataset.trajectories,
