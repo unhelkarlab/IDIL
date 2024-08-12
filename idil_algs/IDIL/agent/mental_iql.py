@@ -173,9 +173,10 @@ class MentalIQL:
     self.tx_agent.save(path, "_tx")
     self.pi_agent.save(path, "_pi")
 
-  def load(self, path):
+  def load(self, path, load_micro: bool = True):
     self.tx_agent.load(path + "_tx")
-    self.pi_agent.load(path + "_pi")
+    if load_micro:
+      self.pi_agent.load(path + "_pi")
 
   def infer_mental_states(self, state, action):
     '''
