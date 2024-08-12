@@ -11,8 +11,10 @@ from itertools import count
 import idil_gym
 import gym
 from munch import Munch 
+from idil_algs.baselines.IQLearn.dataset.expert_dataset import ExpertDataset
 
-def load_agent(run_id: str, env_name:str ="CleanupSingle-v0"):
+
+def load_agent(run_id: str, env_name:str ="CleanupSingle-v0", load_micro: bool = True, expert_dataset: ExpertDataset = None):
     """
     Load agent and environment
     """
@@ -20,7 +22,7 @@ def load_agent(run_id: str, env_name:str ="CleanupSingle-v0"):
     # load run config and agent
     run_path = loading_utils.get_run_path(env_name, run_id)
     run_config = loading_utils.get_run_config(run_path)
-    agent = loading_utils.get_agent(run_path, run_config)
+    agent = loading_utils.get_agent(run_path, run_config, load_micro=load_micro, expert_dataset=expert_dataset)
 
     return agent, run_config
 
@@ -63,12 +65,13 @@ def generate_trajectory(agent: MentalIQL, run_config: Munch, env):
         latent = next_latent
 
 
-def generate_agent_trajectories(run_id:str, env_name:str="CleanupSingle-v0", num_trajectories: int = 5):
+def generate_agent_trajectories(run_id:str, env_name:str="CleanupSingle-v0", num_trajectories: int = 5,
+                                load_micro: bool = True, expert_dataset : ExpertDataset = None):
     """
     Load agent and environment and generate `num_trajectories` trajectories
     """
     # load agent
-    agent, config = load_agent(run_id, env_name)
+    agent, config = load_agent(run_id, env_name, load_micro=load_micro, expert_dataset=expert_dataset)
     env = make_env(env_name)
     
     # generate trajectories
