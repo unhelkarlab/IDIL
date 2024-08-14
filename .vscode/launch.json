@@ -67,6 +67,38 @@
             ]
         },
         {
+            "name": "Debug Discrete Benchmarking - Randomized Benchmarking",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=boxpush_base",
+                "env=CleanupSingle-v0", "supervision=1.0",
+                "seed=23",
+                "entropy_scoring=true", "k=0.2", "randomize=true",
+                "tag=debug_disc-entropy_scoring_bmtest",
+                "device=cpu"
+            ]
+        },
+        {
+            "name": "Debug Discrete Benchmarking - Entropy Scoring",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil", "base=boxpush_base",
+                "env=CleanupSingle-v0", "supervision=1.0",
+                "seed=23",
+                "entropy_scoring=true", "k=0.2", "randomize=false",
+                "tag=debug_disc-entropy_scoring_bmtest",
+                "device=cpu"
+            ]
+        },
+        {
             "name": "Debug Discrete with FEP",
             "type": "debugpy",
             "request": "launch",
