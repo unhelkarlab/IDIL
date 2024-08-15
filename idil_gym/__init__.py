@@ -48,3 +48,7 @@ register(id='EnvCleanup-v0',
 register(id='RMPickPlaceCan-v0',
          entry_point='idil_gym.envs.robomimic_env:RMPickPlaceCan',
          max_episode_steps=400)
+
+# TODO: add register for FrankaKitchen
+register(id='FrankaKitchen-v0',
+         entry_point='idil_gym.envs.franka_kitchen:FrankaKitchen',  )
