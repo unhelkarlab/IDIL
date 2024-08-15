@@ -156,9 +156,6 @@ class ContinuousExpertPolicySampler:
   def _flatten_list(self, nested_list):
     return [item for sublist in nested_list for item in sublist]
 
-
-  # TODO: refactor this function because KNN.kneighbors function is fully 
-  # vectorized
   def _get_knbr_actions(self, state, latent):
     """Aux function to query the KNN model for nearest neighbors"""
     query = np.hstack([state, latent]).reshape(1, -1)
