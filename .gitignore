@@ -13,3 +13,4 @@ nohup.out
 idil_train/visuals/
 
 *.pyc
+notebooks/kitchen_franka_demos/kitchen-complete-v1/data/main_data.hdf5
