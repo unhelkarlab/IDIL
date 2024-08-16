@@ -124,9 +124,9 @@ def get_cumulative_rewards(trajectories: dict, agents: dict = None):
 def plot_cum_rewards(cum_rewards: dict):
     _, ax = plt.subplots(1,1)
 
-    data = [cum_rewards[kval] for kval in cum_rewards]
+    data = [cum_rewards[kval] for kval in sorted(cum_rewards.keys())]
 
-    ax.boxplot(data, labels=[f"k={kval}%" + r" of $\mathcal{X}'$" for kval in cum_rewards.keys()])
+    ax.boxplot(data, labels=[f"k={kval}%" + r" of $\mathcal{X}'$" for kval in sorted(cum_rewards.keys())])
 
     ax.set_title("Distribution of cumulative rewards for generated trajectories")
     ax.set_xlabel("k-value")
