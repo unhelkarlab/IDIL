@@ -177,6 +177,20 @@
                 "device=cpu"
             ]
         },
+        {
+            "name": "Debug Franka Kitchen",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "alg=idil",
+                "env=CustomFrankaKitchen_153-v0", "supervision=1.0",
+                "seed=0", "fixed_pi=false", "tag=debug_franka",
+                "device=cpu"
+            ]
+        },
         
         
     ]
