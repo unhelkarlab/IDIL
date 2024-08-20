@@ -2,7 +2,12 @@
 Copyright (c) 2020. Sangwon Seo, Vaibhav Unhelkar.
 All rights reserved.
 '''
+import os
+os.environ["LD_LIBRARY_PATH"] = os.environ.get("LD_LIBRARY_PATH", "") + ":/home/juanhevia/.mujoco/mujoco210/bin" + ":/usr/lib/nvidia"
 from gym.envs.registration import register
+from gymnasium.envs.registration import register as register_gymnasium
+
+
 
 register(id='envfrommdp-v0',
          entry_point='idil_gym.envs.mdp_envs:EnvFromMDP',
@@ -49,6 +54,18 @@ register(id='RMPickPlaceCan-v0',
          entry_point='idil_gym.envs.robomimic_env:RMPickPlaceCan',
          max_episode_steps=400)
 
-# TODO: add register for FrankaKitchen
-register(id='FrankaKitchen-v0',
-         entry_point='idil_gym.envs.franka_kitchen:FrankaKitchen',  )
+register_gymnasium(id='CustomFrankaKitchen_125-v0',
+                   entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_125',
+                   max_episode_steps=280)
+
+register_gymnasium(id='CustomFrankaKitchen_123-v0',
+                   entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_123',
+                   max_episode_steps=280)
+
+register_gymnasium(id='CustomFrankaKitchen_153-v0',
+                    entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_153',
+                    max_episode_steps=280)
+
+register_gymnasium(id='CustomFrankaKitchen_253-v0',
+                    entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_253',
+                    max_episode_steps=280)
