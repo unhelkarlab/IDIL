@@ -6,7 +6,7 @@ import numpy as np
 COMMAND_STR_TEMPLATE = '''
 python idil_train/run_algs.py alg={alg} base={base} env={env} seed={seed} supervision={supervision} 
     k={kval} entropy_scoring=true tag='{tag}' fixed_pi={fixed_pi} randomize={randomize}
-    max_explore_step=2.5e4
+    demo_latent_infer_interval=2.5e4
 '''
 
 if __name__ == "__main__":
