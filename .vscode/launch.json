@@ -95,7 +95,8 @@
                 "seed=23",
                 "entropy_scoring=true", "k=0.2", "randomize=false",
                 "tag=debug_disc-entropy_scoring_bmtest",
-                "device=cpu"
+                "device=cpu",
+                "demo_latent_infer_interval=2.5e4", "max_explore_step=5e4"
             ]
         },
         {
