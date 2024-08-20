@@ -83,9 +83,7 @@ def get_top_k_trajectories(agent: MentalIQL,
 
 def infer_mental_states_all_demo(agent: MentalIQL,
                                  expert_traj, 
-                                 traj_labels,
-                                 entropy_scoring: bool = False,
-                                 k: float = 1.0):
+                                 traj_labels):
   num_samples = len(expert_traj["states"])
   list_mental_states = []
   list_mental_states_idx = []
@@ -108,17 +106,6 @@ def infer_mental_states_all_demo(agent: MentalIQL,
       list_mental_states.append(mental_array)
       list_mental_states_idx.append(i_e)
 
-
-  if entropy_scoring and k:
-    # sort the inferred mental arrays by entropy, in descending entropy order
-    inferred_mental_arrays = sorted(inferred_mental_arrays,
-                                    key=lambda x: x[2],
-                                    reverse=True)
-    # select the top k mental arrays
-    # _k = min(k, len(inferred_mental_arrays))
-    _k = int(k * len(inferred_mental_arrays))
-    inferred_mental_arrays = inferred_mental_arrays[:_k]
-
   _extend_mental_array = [mental_array for mental_array, _, _ in inferred_mental_arrays]
   _extend_mental_array_idx = [i_e for _, i_e, _ in inferred_mental_arrays]
 
@@ -130,8 +117,7 @@ def infer_mental_states_all_demo(agent: MentalIQL,
 
 def infer_last_next_mental_state(agent: MentalIQL, expert_traj,
                                  list_mental_states,
-                                 list_mental_states_idx: List[int],
-                                 k: int = None):
+                                 list_mental_states_idx: List[int]):
   list_last_next_mental_state = []
   for mental_idx, traj_idx in enumerate(list_mental_states_idx):
     last_next_state = expert_traj["next_states"][traj_idx][-1]
@@ -236,9 +222,10 @@ def train(config: omegaconf.DictConfig,
       expert_dataset.trajectories)
   
   # ---- load the extra trajectories
-  with open(config.extra_trajectories_path, 'rb') as f:
-    extra_trajectories = pickle.load(f)
-  print(f"\nLoaded {len(extra_trajectories['states'])} extra trajectories with keys: {list(extra_trajectories.keys())}\n\n")
+  if config.entropy_scoring:
+    with open(config.extra_trajectories_path, 'rb') as f:
+      extra_trajectories = pickle.load(f)
+    print(f"\nLoaded {len(extra_trajectories['states'])} extra trajectories with keys: {list(extra_trajectories.keys())}\n\n")
 
   # ---- initialize wandb metrics
   wandb.run.summary["expert_avg"] = expert_avg
@@ -351,19 +338,38 @@ def train(config: omegaconf.DictConfig,
             or explore_steps % config.demo_latent_infer_interval == 0):
 
           # --- here begings inference + data formatting ---
-          top_k_trajectories = get_top_k_trajectories(agent, 
-                                                      extra_trajectories, 
-                                                      k=config.k,
-                                                      randomize=config.randomize)
-          expert_next_latents = infer_next_latent(agent, expert_dataset.trajectories)
-          extra_next_latents = infer_next_latent(agent, top_k_trajectories)
-          exb = build_expert_batch_with_topK(expert_trajectories=expert_dataset.trajectories,
-                                             extra_trajectories=top_k_trajectories,
-                                             device= agent.device,
-                                             init_latent=agent.PREV_LATENT,
-                                             init_action=agent.PREV_ACTION,
-                                             expert_next_latents=expert_next_latents,
-                                             extra_next_latents=extra_next_latents)
+          if config.entropy_scoring:
+            top_k_trajectories = get_top_k_trajectories(agent, 
+                                                        extra_trajectories, 
+                                                        k=config.k,
+                                                        randomize=config.randomize)
+            expert_next_latents = infer_next_latent(agent, expert_dataset.trajectories)
+            extra_next_latents = infer_next_latent(agent, top_k_trajectories)
+            exb = build_expert_batch_with_topK(expert_trajectories=expert_dataset.trajectories,
+                                              extra_trajectories=top_k_trajectories,
+                                              device= agent.device,
+                                              init_latent=agent.PREV_LATENT,
+                                              init_action=agent.PREV_ACTION,
+                                              expert_next_latents=expert_next_latents,
+                                              extra_next_latents=extra_next_latents)
+          else:
+              # infer mental states for unlabeled slots in trajectories 
+            mental_states, mental_states_idx = infer_mental_states_all_demo(
+                agent, expert_dataset.trajectories, traj_labels) # entropy scoring configuration
+            
+            mental_states_after_end = infer_last_next_mental_state(
+                agent, expert_dataset.trajectories,
+                list_mental_states=mental_states,
+                list_mental_states_idx=mental_states_idx)
+            
+            exb = get_expert_batch(
+                expert_dataset.trajectories,
+                mental_states,
+                agent.device,
+                agent.PREV_LATENT,
+                agent.PREV_ACTION,
+                mental_states_idx=mental_states_idx,
+                mental_states_after_end=mental_states_after_end)
           
           expert_data = (exb["prev_latents"], exb["prev_actions"],
                          exb["states"], exb["latents"], exb["actions"],
