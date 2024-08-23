@@ -1,9 +1,9 @@
 {
-    "microwave": 1,
-    "kettle": 2,
-    "light switch": 3,
-    "slide cabinet": 4,
-    "bottom burner": 5,
-    "top burner": 6,
-    "hinge cabinet": 7
+        "microwave": 0,
+        "kettle": 1,
+        "light switch": 2,
+        "slide cabinet": 3,
+        "bottom burner": 4,
+        "top burner": 5,
+        "hinge cabinet": 6
 }
