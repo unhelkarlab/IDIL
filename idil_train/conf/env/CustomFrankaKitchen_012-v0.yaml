@@ -1,0 +1,9 @@
+# @package _global_
+
+defaults:
+  - mujoco_common
+
+
+env_name: CustomFrankaKitchen_012-v0
+data_path: experts/FrankaKitchen-v0-mixed_260_0_1_2.pkl
+n_traj: 60 # there are 61 available trajectories for this setup

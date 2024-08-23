@@ -12,8 +12,10 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_3-v0", "supervision=1.0",
+                "alg=idil",
+                "base=MultiGoals2D_base",
+                "env=MultiGoals2D_3-v0",
+                "supervision=1.0",
                 "seed=0",
                 "tag=debug",
                 "device=cpu"
@@ -27,10 +29,14 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_5-v0", "supervision=1.0",
+                "alg=idil",
+                "base=MultiGoals2D_base",
+                "env=MultiGoals2D_5-v0",
+                "supervision=1.0",
                 "seed=0",
-                "n_traj=500", "entropy_scoring=true", "k=0.2",
+                "n_traj=500",
+                "entropy_scoring=true",
+                "k=0.2",
                 "tag=debug",
                 "device=cpu"
             ]
@@ -43,8 +49,10 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=1.0",
+                "alg=idil",
+                "base=boxpush_base",
+                "env=CleanupSingle-v0",
+                "supervision=1.0",
                 "seed=0",
                 "tag=debug_disc-vanilla",
                 "device=cpu"
@@ -58,10 +66,13 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=1.0",
+                "alg=idil",
+                "base=boxpush_base",
+                "env=CleanupSingle-v0",
+                "supervision=1.0",
                 "seed=0",
-                "entropy_scoring=true", "k=0.3",
+                "entropy_scoring=true",
+                "k=0.3",
                 "tag=debug_disc-entropy_scoring",
                 "device=cpu"
             ]
@@ -74,10 +85,14 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=1.0",
+                "alg=idil",
+                "base=boxpush_base",
+                "env=CleanupSingle-v0",
+                "supervision=1.0",
                 "seed=23",
-                "entropy_scoring=true", "k=0.2", "randomize=true",
+                "entropy_scoring=true",
+                "k=0.2",
+                "randomize=true",
                 "tag=debug_disc-entropy_scoring_bmtest",
                 "device=cpu"
             ]
@@ -90,13 +105,18 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=1.0",
+                "alg=idil",
+                "base=boxpush_base",
+                "env=CleanupSingle-v0",
+                "supervision=1.0",
                 "seed=23",
-                "entropy_scoring=true", "k=0.2", "randomize=false",
+                "entropy_scoring=true",
+                "k=0.2",
+                "randomize=false",
                 "tag=debug_disc-entropy_scoring_bmtest",
                 "device=cpu",
-                "demo_latent_infer_interval=2.5e4", "max_explore_step=5e4"
+                "demo_latent_infer_interval=2.5e4",
+                "max_explore_step=5e4"
             ]
         },
         {
@@ -107,9 +127,12 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=1.0",
-                "seed=0" , "fixed_pi=true",
+                "alg=idil",
+                "base=boxpush_base",
+                "env=CleanupSingle-v0",
+                "supervision=1.0",
+                "seed=0",
+                "fixed_pi=true",
                 "tag=debug_disc-fep",
                 "device=cpu"
             ]
@@ -122,10 +145,13 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=1.0",
-                "seed=0" , 
-                "entropy_scoring=true", "k=0.3",
+                "alg=idil",
+                "base=boxpush_base",
+                "env=CleanupSingle-v0",
+                "supervision=1.0",
+                "seed=0",
+                "entropy_scoring=true",
+                "k=0.3",
                 "fixed_pi=true",
                 "tag=debug_disc-fep",
                 "device=cpu"
@@ -139,10 +165,13 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=boxpush_base",
-                "env=CleanupSingle-v0", "supervision=1.0",
-                "seed=0" , 
-                "entropy_scoring=true", "k=0.3",
+                "alg=idil",
+                "base=boxpush_base",
+                "env=CleanupSingle-v0",
+                "supervision=1.0",
+                "seed=0",
+                "entropy_scoring=true",
+                "k=0.3",
                 "randomize=true",
                 "fixed_pi=true",
                 "tag=debug_disc-fep",
@@ -157,12 +186,16 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_3-v0", "supervision=1.0",
-                "seed=0", "fixed_pi=false", "tag=debug_cont-vanilla",
+                "alg=idil",
+                "base=MultiGoals2D_base",
+                "env=MultiGoals2D_3-v0",
+                "supervision=1.0",
+                "seed=0",
+                "fixed_pi=false",
+                "tag=debug_cont-vanilla",
                 "device=cpu"
             ]
-        },        
+        },
         {
             "name": "Debug Continuous with FEP",
             "type": "debugpy",
@@ -171,9 +204,13 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [
-                "alg=idil", "base=MultiGoals2D_base",
-                "env=MultiGoals2D_3-v0", "supervision=1.0",
-                "seed=0", "fixed_pi=true", "tag=debug_cont-fep",
+                "alg=idil",
+                "base=MultiGoals2D_base",
+                "env=MultiGoals2D_3-v0",
+                "supervision=1.0",
+                "seed=0",
+                "fixed_pi=true",
+                "tag=debug_cont-fep",
                 "device=cpu"
             ]
         },
@@ -186,12 +223,46 @@
             "justMyCode": false,
             "args": [
                 "alg=idil",
-                "env=CustomFrankaKitchen_153-v0", "supervision=1.0",
-                "seed=0", "fixed_pi=false", "tag=debug_franka",
+                "env=CustomFrankaKitchen_012-v0",
+                "supervision=1.0",
+                "seed=0",
+                "fixed_pi=false",
+                "tag=debug_franka",
                 "device=cpu"
             ]
         },
-        
-        
+        {
+            "name": "Debug Sweeping",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "entropy_scoring_sweep.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "--sweep_k=0.0;0.1;0.25;1.0",
+                "--num_trials=5",
+                "--supervision=1.0",
+                "--custom_tag=DEBUG_CUSTOM_TAG"
+            ]
+        },
+        {
+            "name": "Python: Run Idil Train",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "idil_train/run_algs.py",
+            "args": [
+                "alg=idil",
+                "base=boxpush_base",
+                "env=CleanupSingle-v0",
+                "seed=82650",
+                "supervision=1.0",
+                "k=0.0",
+                "entropy_scoring=true",
+                "tag='es-0-01J5RYQ4D5P056KWDNGQWADE2E-DEBUG_CUSTOM_TAG'",
+                "fixed_pi=False",
+                "randomize=False",
+                "demo_latent_infer_interval=2.5e4"
+            ]
+        }
     ]
 }

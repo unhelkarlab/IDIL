@@ -1,8 +1,0 @@
-# @package _global_
-
-defaults:
-  - mujoco_common
-
-
-env_name: CustomFrankaKitchen_153-v0
-data_path: experts/FrankaKitchen-v0-mixed_260_1_5_3.pkl
