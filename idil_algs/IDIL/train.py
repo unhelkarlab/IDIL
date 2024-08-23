@@ -204,8 +204,9 @@ def train(config: omegaconf.DictConfig,
   eval_env = make_env(env_name, env_make_kwargs=env_kwargs)
 
   # Seed envs
-  env.seed(seed)
-  eval_env.seed(seed + 10)
+  if not ("franka" in env_name.lower()):
+    env.seed(seed)
+    eval_env.seed(seed + 10)
 
   initial_mem = int(config.init_sample)
   replay_mem = int(replay_mem)
@@ -271,7 +272,12 @@ def train(config: omegaconf.DictConfig,
     episode_reward = 0
     done = False
 
-    state = env.reset()
+    if "franka" in env_name.lower():
+      state_obj = env.reset(seed=seed) # unpack multi-output
+      state = state_obj["state"]["observation"]
+    else:
+      state = env.reset()
+    
     prev_lat, prev_act = agent.PREV_LATENT, agent.PREV_ACTION
     latent = agent.choose_mental_state(state, prev_lat, sample=True)
 
@@ -281,14 +287,21 @@ def train(config: omegaconf.DictConfig,
         # this action will be added to the replay buffer
         action = agent.choose_policy_action(state, latent, sample=True)
 
-        next_state, reward, done, info = env.step(action)
+        if "franka" in env_name.lower():
+          next_state_obj, reward, terminated, truncated, info = env.step(action)
+          next_state = next_state_obj["observation"]
+          done = terminated or truncated
+        else:
+          next_state, reward, done, info = env.step(action)
         next_latent = agent.choose_mental_state(next_state, latent, sample=True)
 
       episode_reward += reward
 
       if explore_steps % eval_interval == 0 and begin_learn:
         eval_returns, eval_timesteps, successes = evaluate(
-            agent, eval_env, num_episodes=num_episodes)
+            agent, eval_env, num_episodes=num_episodes,
+            seed= seed,
+            env_name=env_name)
         returns = np.mean(eval_returns)
         logger.log('eval/episode_reward', returns, explore_steps)
         logger.log('eval/episode_step', np.mean(eval_timesteps), explore_steps)

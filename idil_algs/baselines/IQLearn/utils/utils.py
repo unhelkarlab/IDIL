@@ -6,6 +6,7 @@ from torch.autograd import Variable
 from typing import Callable, Any, Sequence
 import pickle
 import gym
+import gymnasium
 from collections import defaultdict
 from stable_baselines3.common.monitor import Monitor
 from .normalize_action_wrapper import (check_and_normalize_box_actions)
@@ -49,10 +50,12 @@ def conv_trajectories_2_iql_format(sa_trajectories: Sequence,
 
 def make_env(env_name, monitor=True, env_make_kwargs={}):
   env_make_kwargs = env_make_kwargs or {}
-  env = gym.make(env_name, **env_make_kwargs)
-
-  if monitor:
-    env = Monitor(env, "gym")
+  if "franka" in env_name.lower():
+    env = gymnasium.make(env_name, **env_make_kwargs)
+  else:
+    env = gym.make(env_name, **env_make_kwargs)  
+    if monitor:
+      env = Monitor(env, "gym")
 
   # Normalize box actions to [-1, 1]
   env = check_and_normalize_box_actions(env)

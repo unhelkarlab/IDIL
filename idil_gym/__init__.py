@@ -54,18 +54,18 @@ register(id='RMPickPlaceCan-v0',
          entry_point='idil_gym.envs.robomimic_env:RMPickPlaceCan',
          max_episode_steps=400)
 
-register_gymnasium(id='CustomFrankaKitchen_125-v0',
-                   entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_125',
+register_gymnasium(id='CustomFrankaKitchen_014-v0',
+                   entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_014',
                    max_episode_steps=280)
 
-register_gymnasium(id='CustomFrankaKitchen_123-v0',
-                   entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_123',
+register_gymnasium(id='CustomFrankaKitchen_012-v0',
+                   entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_012',
                    max_episode_steps=280)
 
-register_gymnasium(id='CustomFrankaKitchen_153-v0',
-                    entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_153',
+register_gymnasium(id='CustomFrankaKitchen_042-v0',
+                    entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_042',
                     max_episode_steps=280)
 
-register_gymnasium(id='CustomFrankaKitchen_253-v0',
-                    entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_253',
+register_gymnasium(id='CustomFrankaKitchen_142-v0',
+                    entry_point='idil_gym.envs.franka_kitchen:CustomFrankaKitchen_142',
                     max_episode_steps=280)

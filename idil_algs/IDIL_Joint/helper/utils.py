@@ -1,6 +1,7 @@
 from typing import Callable, Any, List, Sequence
 from collections import defaultdict
 import os
+import gymnasium
 import torch
 import pickle
 import numpy as np
@@ -66,12 +67,15 @@ def save(agent: OptionSAC,
     agent.save(file_path)
 
 
-def evaluate(agent: OptionSAC, env: Env, num_episodes=10, vis=True):
+def evaluate(agent: OptionSAC, env: Env,
+             num_episodes=10, vis=True, seed: int = None,
+             env_name: str = ""):
   """Evaluates the policy.
     Args:
       actor: A policy to evaluate.
       env: Environment to evaluate the policy on.
       num_episodes: A number of episodes to average the policy on.
+      seed : seed for the environment, only to be passed if environment belongs to the gymnasium module
     Returns:
       Averaged reward and a total number of steps.
     """
@@ -80,7 +84,12 @@ def evaluate(agent: OptionSAC, env: Env, num_episodes=10, vis=True):
   successes = []
 
   while len(total_returns) < num_episodes:
-    state = env.reset()
+    if "franka" in env_name.lower():
+      _seed = seed if seed is not None else np.random.randint(0, 1000)
+      _reset_obj = env.reset(seed=_seed)
+      state = _reset_obj['state']['observation']
+    else:
+      state = env.reset()
     prev_latent, prev_act = agent.PREV_LATENT, agent.PREV_ACTION
     done = False
 
@@ -90,11 +99,18 @@ def evaluate(agent: OptionSAC, env: Env, num_episodes=10, vis=True):
                                              prev_latent,
                                              prev_act,
                                              sample=False)
-        next_state, reward, done, info = env.step(action)
+        if "franka" in env_name.lower():
+          next_state_obj, reward, terminated, truncated, info = env.step(action)
+          next_state = next_state_obj["observation"]
+          done = terminated or truncated
+        else:
+          next_state, reward, done, info = env.step(action)
         state = next_state
         prev_latent = latent
         prev_act = action
 
+        if "franka" in env_name.lower():
+          total_returns.append(reward)
         if 'episode' in info.keys():
           total_returns.append(info['episode']['r'])
           total_timesteps.append(info['episode']['l'])
