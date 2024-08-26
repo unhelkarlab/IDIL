@@ -225,10 +225,9 @@
                 "alg=idil",
                 "env=CustomFrankaKitchen_012-v0",
                 "supervision=1.0",
-                "seed=0",
+                "seed=123",
                 "fixed_pi=false",
-                "tag=debug_franka",
-                "device=cpu"
+                "tag=debug_franka"
             ]
         },
         {
