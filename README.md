@@ -2,12 +2,9 @@
 This repository contains an implementation of IDIL proposed in `IDIL: Imitation Learning of Intent-Driven Expert Behavior`, AAMAS 2024.
 
 ## Installation
-We recommend you use `conda` environment with python 3.8. 
+Clone this repository to your local machine and install it with the following commands:
 ```
-conda create -n idil python=3.8
-```
-Then, please install with the following command:
-```
+cd IDIL/
 pip install -e .
 ```
 
