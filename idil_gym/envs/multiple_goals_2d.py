@@ -230,7 +230,7 @@ def generate_data(save_dir, env_name, n_traj, render=False, render_delay=10):
   elif env_name == "MultiGoals2D_5-v0":
     env = MultiGoals2D_5()
   else:
-    raise NotImplementedError
+    raise NotImplementedError()
 
   env.set_render_delay(render_delay)
   agent = MGExpert(env, 0.3)

@@ -448,6 +448,19 @@ class DiscreteActor(AbstractActor):
 
     return samples, action_log_probs
 
+  # TODO: temporary solution
+  def sample_w_avail_actions(self, obs, avail_actions=None):
+    logits = self.trunk(obs)
+    if avail_actions is not None:
+      logits[avail_actions.reshape(logits.shape) == 0] = -1e10
+
+    probs = F.softmax(logits, dim=-1)
+    dist = Categorical(probs=probs)
+
+    samples = dist.sample()
+
+    return samples
+
   def rsample(self, obs):
     'should not be used'
     raise NotImplementedError

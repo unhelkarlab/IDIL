@@ -1,9 +1,14 @@
 from idil_gym.envs.mdp_env.env_from_mdp import EnvFromMDP
 from hcair_domains.box_push.maps import EXP1_MAP
-from hcair_domains.box_push.policy import BoxPushPolicyTeamExp1
-from hcair_domains.box_push.simulator import BoxPushSimulator_AlwaysTogether
-from hcair_domains.box_push.mdp import BoxPushTeamMDP_AlwaysTogether
-from hcair_domains.box_push.agent import BoxPushAIAgent_Team2
+from hcair_domains.box_push.policy import (BoxPushPolicyTeamExp1,
+                                           BoxPushPolicyIndvExp1)
+from hcair_domains.box_push.simulator import (BoxPushSimulator_AlwaysTogether,
+                                              BoxPushSimulator_AlwaysAlone)
+from hcair_domains.box_push.mdp import (BoxPushTeamMDP_AlwaysTogether,
+                                        BoxPushTeamMDP_AlwaysAlone,
+                                        BoxPushAgentMDP_AlwaysAlone)
+from hcair_domains.box_push.agent import (BoxPushAIAgent_Team2,
+                                          BoxPushAIAgent_Indv2)
 from gym import spaces
 
 TEMPERATURE = 0.3
@@ -62,5 +67,19 @@ class EnvMovers_v0(EnvBoxPush):
     robot_policy = BoxPushPolicyTeamExp1(mdp_task, TEMPERATURE,
                                          BoxPushSimulator_AlwaysTogether.AGENT2)
     robot_agent = BoxPushAIAgent_Team2(robot_policy)
+
+    super().__init__(game_map, mdp_task, robot_agent)
+
+
+class EnvCleanup_v0(EnvBoxPush):
+
+  def __init__(self):
+    game_map = EXP1_MAP
+    mdp_task = BoxPushTeamMDP_AlwaysAlone(**game_map)
+    mdp_agent = BoxPushAgentMDP_AlwaysAlone(**game_map)
+
+    robot_policy = BoxPushPolicyIndvExp1(mdp_task, mdp_agent, TEMPERATURE,
+                                         BoxPushSimulator_AlwaysAlone.AGENT2)
+    robot_agent = BoxPushAIAgent_Indv2(robot_policy)
 
     super().__init__(game_map, mdp_task, robot_agent)

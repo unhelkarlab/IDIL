@@ -16,10 +16,10 @@ class ExpertDataset(Dataset):
     Expert rewards are not required but can be useful for evaluation.
 
         shapes:
-            expert["states"]  =  [num_experts, traj_length, state_space]
-            expert["actions"] =  [num_experts, traj_length, action_space]
-            expert["rewards"] =  [num_experts, traj_length]
-            expert["lengths"] =  [num_experts]
+            expert["states"]  =  [num_episodes, traj_length, state_space]
+            expert["actions"] =  [num_episodes, traj_length, action_space]
+            expert["rewards"] =  [num_episodes, traj_length]
+            expert["lengths"] =  [num_episodes]
     """
 
   def __init__(self,
