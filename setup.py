@@ -10,7 +10,7 @@ setup(name="idil",
       description="Intent-Driven Imitation Learning",
       long_description=long_description,
       long_description_content_type="text/markdown",
-      packages=find_packages(exclude=["apps"]),
+      packages=find_packages(exclude=["apps", "train"]),
       python_requires='>=3.8',
       install_requires=[
           'numpy',
