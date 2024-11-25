@@ -9,7 +9,7 @@ pip install -e .
 ```
 
 ## IDIL Training
-Please refer to the `readme.md` file in the `idil_train/` folder.
+Please refer to the `readme.md` file in the `train/` folder.
 
 ## Citation
 ```
